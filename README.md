@@ -1,0 +1,2 @@
+# ghostcloud
+Decentralized Web Hosting
