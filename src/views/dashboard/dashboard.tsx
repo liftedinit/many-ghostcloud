@@ -13,7 +13,6 @@ import {
 } from '@chakra-ui/react'
 import { useAccountsStore } from '../../features/accounts'
 import { AnonymousIdentity } from '@liftedinit/many-js'
-import { UseDisclosureProps } from '@chakra-ui/hooks/src/use-disclosure'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'

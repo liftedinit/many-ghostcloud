@@ -2,9 +2,6 @@ import {
   WebAuthnIdentity,
   Ed25519KeyPairIdentity,
   AnonymousIdentity,
-  AccountRole,
-  EventType,
-  AccountFeatureTypes,
 } from '@liftedinit/many-js'
 
 export type AccountId = number

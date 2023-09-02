@@ -1,10 +1,8 @@
-import { AnonymousIdentity, WebAuthnIdentity } from '@liftedinit/many-js'
-import { base64ToArrayBuffer } from '@liftedinit/ui'
+import { AnonymousIdentity } from '@liftedinit/many-js'
 
 const mapDataType = 'Map'
 
 const anonymousBackwardCompatibleDataType = 'r'
-const webauthnBackwardCompatibleDataType = 'c'
 
 export function replacer(_: string, value: any) {
   if (value instanceof Map) {

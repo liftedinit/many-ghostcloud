@@ -1,6 +1,6 @@
 import React from 'react'
 import { useQuery } from 'react-query'
-import { LedgerInfo, NetworkAttributes } from '@liftedinit/many-js'
+import { NetworkAttributes } from '@liftedinit/many-js'
 import { useNetworkContext } from './network-provider'
 
 export function useNetworkStatus() {
