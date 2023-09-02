@@ -1,7 +1,7 @@
 import { chromium, test, expect } from '@playwright/test'
 
 test('has title', async () => {
-  const browser = await chromium.launch({ headless: false, slowMo: 50 })
+  const browser = await chromium.launch({ headless: true })
   const context = await browser.newContext({ ignoreHTTPSErrors: true })
   const page = await context.newPage()
   await page.goto('https://localhost:3000')
