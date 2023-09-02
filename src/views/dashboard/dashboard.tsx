@@ -1,12 +1,11 @@
-import { Fragment, useState } from 'react'
-import { Flex, PlusIcon } from '@liftedinit/ui'
+import { useState } from 'react'
+import { PlusIcon } from '@liftedinit/ui'
 import {
   Box,
   Button,
   Container,
   Grid,
   GridItem,
-  Text,
   Heading,
   useMediaQuery,
   useDisclosure,
@@ -17,9 +16,10 @@ import { AnonymousIdentity } from '@liftedinit/many-js'
 import { UseDisclosureProps } from '@chakra-ui/hooks/src/use-disclosure'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
+import DeploymentsList from '../../components/DeploymentsList'
+import { SocialLogin } from '../../features/accounts/components/social-login'
 
-export function Dashboard(props: { modalDisclosure?: UseDisclosureProps }) {
-  const onOpenAddAccount = props.modalDisclosure?.onOpen || (() => {})
+export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
   const isAnonymous = account?.identity instanceof AnonymousIdentity
   const {
@@ -37,13 +37,21 @@ export function Dashboard(props: { modalDisclosure?: UseDisclosureProps }) {
   const [deployments, setDeployments] = useState([
     {
       uuid: 'de35cecd-4be7-4d7c-ae53-87da0dabdc80',
-      domain: 'www.foobarbaz.com',
-      status: 'Active',
+      siteName: 'this site name is rather long and stuff',
+      siteDescription:
+        'Curabitur id leo eu erat pretium consequat. Nulla metus tortor, dignissim et massa vel, faucibus consectetur turpis.',
+      siteUrl:
+        'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
+      transactionMemo: '',
     },
     {
       uuid: '2ed2cdd7-33a7-4dbe-a45d-8d456d84e178',
-      domain: 'www.abcd.com',
-      status: 'Active',
+      siteName: 'abcdef',
+      siteDescription:
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      siteUrl:
+        'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
+      transactionMemo: 'Duis auctor mauris eget sapien dignissim consectetur',
     },
   ])
   const [activeDeploymentUuid, setActiveDeploymentUuid] = useState('')
@@ -73,15 +81,7 @@ export function Dashboard(props: { modalDisclosure?: UseDisclosureProps }) {
           }}
           justifyContent="center"
         >
-          <Flex justifyContent="center">
-            <Heading as="h2" size="md" mb={5}>
-              Log in to continue
-            </Heading>
-          </Flex>
-
-          <Flex justifyContent="center">
-            <Button onClick={onOpenAddAccount}>Add Account</Button>
-          </Flex>
+          <SocialLogin onSuccess={() => {}} />
         </Box>
       </Container>
     )
@@ -122,98 +122,11 @@ export function Dashboard(props: { modalDisclosure?: UseDisclosureProps }) {
               </GridItem>
             </Grid>
 
-            <Grid
-              templateColumns={`repeat(${isMobile ? 1 : 4}, 1fr)`}
-              gap={0}
-              mt={4}
-              mb={40}
-            >
-              <GridItem
-                colSpan={2}
-                borderBottom={`1px solid ${theme.colors.gray[200]}`}
-                py={2}
-                display={isMobile ? 'none' : 'flex'}
-                alignItems="center"
-              >
-                <Text fontWeight="bold">Domain</Text>
-              </GridItem>
-              <GridItem
-                colSpan={1}
-                borderBottom={`1px solid ${theme.colors.gray[200]}`}
-                py={2}
-                display={isMobile ? 'none' : 'flex'}
-                alignItems="center"
-              >
-                <Text fontWeight="bold">Status</Text>
-              </GridItem>
-              <GridItem
-                colSpan={1}
-                borderBottom={`1px solid ${theme.colors.gray[200]}`}
-                display={isMobile ? 'none' : 'flex'}
-              ></GridItem>
-              {deployments.map(({ uuid, domain, status }) => {
-                return (
-                  <Fragment key={uuid}>
-                    <GridItem
-                      colSpan={2}
-                      borderBottom={
-                        isMobile
-                          ? 'none'
-                          : `1px solid ${theme.colors.gray[200]}`
-                      }
-                      py={2}
-                      display="flex"
-                      alignItems="center"
-                      pt={isMobile ? 4 : 2}
-                    >
-                      {domain}
-                    </GridItem>
-                    <GridItem
-                      colSpan={1}
-                      borderBottom={
-                        isMobile
-                          ? 'none'
-                          : `1px solid ${theme.colors.gray[200]}`
-                      }
-                      py={2}
-                      display="flex"
-                      alignItems="center"
-                    >
-                      {isMobile && 'Status: '}
-                      {status}
-                    </GridItem>
-                    <GridItem
-                      colSpan={1}
-                      display={isMobile ? 'flex' : 'none'}
-                    ></GridItem>
-                    <GridItem
-                      colSpan={1}
-                      borderBottom={`1px solid ${theme.colors.gray[200]}`}
-                      py={2}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent={isMobile ? 'flex-start' : 'flex-end'}
-                    >
-                      <Button
-                        onClick={() => handleEditDeployment(uuid)}
-                        size="sm"
-                        fontWeight="normal"
-                        mr={3}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteDeployment(uuid)}
-                        size="sm"
-                        fontWeight="normal"
-                      >
-                        Delete
-                      </Button>
-                    </GridItem>
-                  </Fragment>
-                )
-              })}
-            </Grid>
+            <DeploymentsList
+              deployments={deployments}
+              onDelete={handleDeleteDeployment}
+              onEdit={handleEditDeployment}
+            />
           </Box>
 
           <CreateDeployment

@@ -34,29 +34,3 @@ export type CredentialData = {
   base64CredentialId: string
   cosePublicKey: ArrayBuffer
 }
-
-export const submitterRoles = [
-  AccountRole[AccountRole.canLedgerTransact],
-  AccountRole[AccountRole.canMultisigSubmit],
-  AccountRole[AccountRole.owner],
-]
-
-export const accountMultisigFeature =
-  AccountFeatureTypes[AccountFeatureTypes.accountMultisig]
-export const accountLedgerFeature =
-  AccountFeatureTypes[AccountFeatureTypes.accountLedger]
-
-export const approverRoles = [
-  AccountRole[AccountRole.canMultisigApprove],
-  AccountRole[AccountRole.canMultisigSubmit],
-  AccountRole[AccountRole.owner],
-]
-
-export const multisigTxnTypes = [
-  EventType.accountMultisigApprove,
-  EventType.accountMultisigSubmit,
-  EventType.accountMultisigExecute,
-  EventType.accountMultisigRevoke,
-  EventType.accountMultisigWithdraw,
-  EventType.accountMultisigSetDefaults,
-]

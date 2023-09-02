@@ -31,13 +31,6 @@ export function reviver(_: string, value: any) {
         case anonymousBackwardCompatibleDataType:
         case AnonymousIdentity.dataType:
           return new AnonymousIdentity()
-
-        case webauthnBackwardCompatibleDataType:
-        case WebAuthnIdentity.dataType:
-          return new WebAuthnIdentity(
-            value.cosePublicKey,
-            base64ToArrayBuffer(value.rawId),
-          )
       }
     }
   }

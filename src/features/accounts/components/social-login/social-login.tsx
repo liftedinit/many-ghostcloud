@@ -16,6 +16,7 @@ import {
   TwitterIcon,
   useToast,
 } from '@liftedinit/ui'
+import { useTheme } from '@chakra-ui/react'
 import { doesAccountExist, useAccountsStore } from 'features/accounts'
 import React from 'react'
 import { get, useForm } from 'react-hook-form'
@@ -35,7 +36,7 @@ const WEB3AUTH_NETWORK = (env('WEB3AUTH_NETWORK') ?? 'testnet') as
   | 'testnet'
   | 'cyan'
 
-export const LOGIN_PROVIDER = {
+const LOGIN_PROVIDER = {
   GOOGLE: 'google',
   GITHUB: 'github',
   TWITTER: 'twitter',
@@ -43,6 +44,7 @@ export const LOGIN_PROVIDER = {
 } as const
 
 export function SocialLogin({ onSuccess }: { onSuccess: () => void }) {
+  const theme = useTheme()
   const toast = useToast()
   const { createAccount, accounts } = useAccountsStore(
     ({ byId, createAccount }) => ({
@@ -178,6 +180,7 @@ export function SocialLogin({ onSuccess }: { onSuccess: () => void }) {
               },
             })}
             variant="outline"
+            borderColor={theme.colors.gray[400]}
           />
         </FieldWrapper>
         <Button

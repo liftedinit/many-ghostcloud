@@ -13,4 +13,4 @@ export function render(ui: any, options = {}) {
 }
 
 export * from '@testing-library/react'
-export { userEvent, rtlRender }
+export { userEvent }

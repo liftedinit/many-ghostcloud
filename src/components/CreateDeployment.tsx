@@ -16,6 +16,7 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  Textarea,
 } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -25,8 +26,17 @@ import { FaExclamation } from 'react-icons/fa'
 import { v4 as uuidv4 } from 'uuid'
 
 interface FormState {
-  domain: string
+  siteName: string
+  siteDescription: string
   zipFile: File | undefined
+  transactionMemo: string
+}
+
+const defaultState = {
+  siteName: '',
+  siteDescription: '',
+  zipFile: undefined,
+  transactionMemo: '',
 }
 
 export default function CreateDeployment({
@@ -49,6 +59,7 @@ export default function CreateDeployment({
         'application/zip': [],
       },
       maxFiles: 1,
+      maxSize: 5242880,
       onDrop: files => {
         setFormState({
           ...formState,
@@ -56,13 +67,12 @@ export default function CreateDeployment({
         })
       },
     })
-  const [formState, setFormState] = useState<FormState>({
-    domain: '',
-    zipFile: undefined,
-  })
+  const [formState, setFormState] = useState<FormState>(defaultState)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  const [isRedeploying, setIsRedeploying] = useState(false)
   const [error, setError] = useState(false)
+  const isValid = !formState.zipFile || !formState.siteName.length
 
   const handleInputChange = (event: React.FormEvent) => {
     const { name, value } = event.target as HTMLInputElement
@@ -74,11 +84,20 @@ export default function CreateDeployment({
 
   useEffect(() => {
     if (!isOpen) return
+
     const foundDeployment = deployments.find(
       (deployment: any) => deployment.uuid === activeDeploymentUuid,
     )
+
     if (foundDeployment) {
-      setFormState({ ...formState, domain: foundDeployment.domain })
+      setFormState({
+        ...formState,
+        siteName: foundDeployment.siteName,
+        siteDescription: foundDeployment.siteDescription,
+        transactionMemo: foundDeployment.transactionMemo,
+        zipFile: undefined,
+      })
+      setIsRedeploying(true)
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -94,26 +113,27 @@ export default function CreateDeployment({
 
       let deployment = {
         uuid: uuidv4(),
-        domain: formState.domain,
-        status: 'Active',
+        siteName: formState.siteName,
+        siteDescription: formState.siteDescription,
+        siteUrl:
+          'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
+        transactionMemo: formState.transactionMemo,
       }
 
-      const foundDeployment = deployments.find(
-        (deployment: any) => deployment.uuid === activeDeploymentUuid,
-      )
-
-      if (foundDeployment) {
+      if (isRedeploying) {
         deploymentsClone = deploymentsClone.filter(
           (deployment: any) => deployment.uuid !== activeDeploymentUuid,
         )
-        deployment.uuid = foundDeployment.uuid
+        deployment.uuid = activeDeploymentUuid
       }
 
       setDeployments([...deploymentsClone, deployment])
     }, 1000)
 
     // const formData = new FormData()
-    // formData.append('domain', formState.domain)
+    // formData.append('siteName', formState.siteName)
+    // formData.append('siteDescription', formState.siteDescription)
+    // formData.append('transactionMemo', formState.transactionMemo)
     // if (formState.zipFile) {
     //   formData.append('file', formState.zipFile, formState.zipFile.name)
     // }
@@ -124,13 +144,15 @@ export default function CreateDeployment({
     //   .then(response => response.json())
     //   .then(json => {
     //     setDeployments([
-    //         ...deployments,
-    //         {
-    //           uuid: json.uuid,
-    //           domain: formState.domain,
-    //           status: json.status,
-    //         },
-    //       ])
+    //       ...deployments,
+    //       {
+    //         uuid: json.uuid,
+    //         siteName: formState.siteName,
+    //         siteUrl: json.url,
+    //         siteDescription: formState.siteDescription,
+    //         transactionMemo: formState.transactionMemo,
+    //       },
+    //     ])
     //     setIsSubmitting(false)
     //     setIsComplete(true)
     //   })
@@ -149,10 +171,7 @@ export default function CreateDeployment({
     onClose()
     setIsComplete(false)
     setError(false)
-    setFormState({
-      domain: '',
-      zipFile: undefined,
-    })
+    setFormState(defaultState)
   }
 
   return (
@@ -211,36 +230,39 @@ export default function CreateDeployment({
           ) : (
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
-                <Text>
-                  Add the following nameservers to your domain provider:
-                </Text>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    padding: 4,
-                    borderWidth: 1,
-                    borderRadius: 2,
-                    borderColor: theme.colors.gray[100],
-                    backgroundColor: theme.colors.gray[50],
-                    color: theme.colors.gray[500],
-                  }}
-                >
-                  ns-12-ghostcloud.com
-                  <br />
-                  ns-22-ghostcloud.com
-                </Box>
-
                 <FormControl isRequired>
-                  <FormLabel>Domain</FormLabel>
+                  <FormLabel>Site Name</FormLabel>
                   <Input
-                    name="domain"
-                    placeholder="www.example.com"
+                    name="siteName"
+                    placeholder=""
                     size="lg"
-                    value={formState.domain}
+                    value={formState.siteName}
                     onChange={handleInputChange}
+                    borderColor={theme.colors.gray[400]}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Site Description</FormLabel>
+                  <Textarea
+                    name="siteDescription"
+                    placeholder=""
+                    size="lg"
+                    value={formState.siteDescription}
+                    onChange={handleInputChange}
+                    borderColor={theme.colors.gray[400]}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Transaction Memo</FormLabel>
+                  <Input
+                    name="transactionMemo"
+                    placeholder=""
+                    size="lg"
+                    value={formState.transactionMemo}
+                    onChange={handleInputChange}
+                    borderColor={theme.colors.gray[400]}
                   />
                 </FormControl>
 
@@ -311,7 +333,8 @@ export default function CreateDeployment({
                       mr={2}
                       color={theme.colors.red[600]}
                     />
-                    Select only one zip file
+                    Please only select one zip file that is less than 5MB in
+                    size.
                   </Text>
                 ) : null}
               </Stack>
@@ -324,7 +347,7 @@ export default function CreateDeployment({
                 <Button
                   type="submit"
                   isLoading={isSubmitting}
-                  disabled={!formState.zipFile || !formState.domain.length}
+                  disabled={isValid}
                   px={10}
                 >
                   Save
