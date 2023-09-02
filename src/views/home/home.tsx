@@ -12,8 +12,8 @@ import {
   useTheme,
 } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
-import logo from '../../assets/logo192-white.png'
-import hero from '../../assets/hero.png'
+import logo from 'assets/logo192-white.png'
+import hero from 'assets/hero.png'
 import { GoLock, GoShieldCheck, GoSmiley } from 'react-icons/go'
 import React from 'react'
 
