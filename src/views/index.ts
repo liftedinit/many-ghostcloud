@@ -1,0 +1,6 @@
+export * from './home'
+export * from './dashboard'
+export * from './notFound'
+export * from './privacyPolicy'
+export * from './termsOfService'
+export * from './app'
