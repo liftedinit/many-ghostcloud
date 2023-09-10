@@ -14,7 +14,7 @@ import React from 'react'
 
 import { SocialLogin } from '../social-login'
 import { CreateAccount } from './create-account'
-// import { PemFile } from './pem-file'
+import { PemFile } from './pem-file'
 import { SeedWords } from './seed-words'
 
 export enum AddAccountMethodTypes {
@@ -75,6 +75,9 @@ export function AddAccountModal({
         <ScaleFade in={true} initialScale={0.9}>
           {addMethod === AddAccountMethodTypes.createSeed && (
             <CreateAccount setAddMethod={setAddMethod} onSuccess={onSuccess} />
+          )}
+          {addMethod === AddAccountMethodTypes.importPem && (
+            <PemFile setAddMethod={setAddMethod} onSuccess={onSuccess} />
           )}
           {addMethod === AddAccountMethodTypes.importSeed && (
             <SeedWords setAddMethod={setAddMethod} onSuccess={onSuccess} />
