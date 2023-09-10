@@ -299,7 +299,7 @@ export function Web3authProvider({ children }: React.PropsWithChildren<{}>) {
   )
 }
 
-function useWeb3authProvider() {
+export function useWeb3authProvider() {
   const ctx = React.useContext(Web3authContext)
   if (!ctx) throw new Error('Web3authContext not found')
   return ctx

@@ -113,6 +113,7 @@ export function Home() {
                 fontWeight={600}
                 fontSize={{ base: '1xl', sm: '2xl', md: '3xl' }}
                 lineHeight="110%"
+                textAlign="center"
               >
                 Simplicity Meets Decentralization
               </Heading>

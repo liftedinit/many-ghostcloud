@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { PlusIcon } from '@liftedinit/ui'
 import {
   Box,
@@ -7,6 +7,7 @@ import {
   Grid,
   GridItem,
   Heading,
+  Text,
   useMediaQuery,
   useDisclosure,
   useTheme,
@@ -16,7 +17,7 @@ import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
-import { SocialLogin } from '../../features/accounts/components/social-login'
+import { AddAccountModal } from '../../features/accounts/components/add-account-modal'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -30,6 +31,11 @@ export function Dashboard() {
     isOpen: confirmDeleteIsOpen,
     onOpen: confirmDeleteOnOpen,
     onClose: confirmDeleteOnClose,
+  } = useDisclosure()
+  const {
+    isOpen: isAddModalOpen,
+    onOpen: onAddModalOpen,
+    onClose: onAddModalClose,
   } = useDisclosure()
   const theme = useTheme()
   const [isMobile] = useMediaQuery('(max-width: 640px)')
@@ -80,8 +86,17 @@ export function Dashboard() {
           }}
           justifyContent="center"
         >
-          <SocialLogin onSuccess={() => {}} />
+          <Text mb={8}>Log in to continue</Text>
+          <Button
+            onClick={() => {
+              onAddModalOpen()
+            }}
+            width={'100%'}
+          >
+            Log In
+          </Button>
         </Box>
+        <AddAccountModal isOpen={isAddModalOpen} onClose={onAddModalClose} />
       </Container>
     )
   }
@@ -90,8 +105,6 @@ export function Dashboard() {
     <>
       <Container maxWidth="100%">
         <Container maxW="4xl" minH={'80vh'}>
-          <Box mt={4}>Logged in as {account?.name}</Box>
-
           <Box py={8}>
             <Grid
               templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}
