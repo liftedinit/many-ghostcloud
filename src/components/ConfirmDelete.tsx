@@ -9,7 +9,7 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react'
 
-export default function CreateDeployment({
+export default function ConfirmDelete({
   onClose,
   isOpen,
   deployments,

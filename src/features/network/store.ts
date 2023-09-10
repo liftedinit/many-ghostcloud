@@ -8,14 +8,9 @@ const devDomains = ['localhost', 'liftedinit.tech']
 
 const initialState = {
   activeId: 0,
-  nextId: 3,
+  nextId: 1,
   byId: new Map([
-    [0, { name: 'Manifest Ledger', url: '/api', filter: 'alberto' }],
-    [1, { name: 'END Ledger', url: '/api-end', filter: 'end-labs' }],
-    [
-      2,
-      { name: 'Legacy Manifest Ledger', url: '/api/legacy', filter: 'legacy' },
-    ], // Hidden from UI
+      [0, { name: 'Ghostcloud Production', url: '/api', filter: 'ghostcloud'}],
   ]),
 }
 
@@ -96,7 +91,7 @@ export const useNetworkStore = create<NetworksState & NetworkActions>(
         }),
     }),
     {
-      name: 'ALBERTO.NETWORKS',
+      name: 'GHOSTCLOUD.NETWORKS',
       // @ts-ignore
       getStorage: () => localforage,
       serialize: state => JSON.stringify(state, replacer),

@@ -74,7 +74,7 @@ export const useAccountsStore = create<AccountsState & AccountMethods>(
         }),
     }),
     {
-      name: 'ALBERTO.IDENTITIES',
+      name: 'GHOSTCLOUD.IDENTITIES',
       // @ts-ignore
       getStorage: () => localforage,
       serialize: state =>

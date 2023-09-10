@@ -36,7 +36,7 @@ export const useAccountStore = create<
       },
     }),
     {
-      name: 'ALBERTO.ACCOUNTS',
+      name: 'GHOSTCLOUD.ACCOUNTS',
       // @ts-ignore
       getStorage: () => localforage,
       serialize: state => JSON.stringify(state, replacer),
