@@ -39,8 +39,6 @@ export function AddAccountModal({
   onClose: () => void
 }) {
   const [addMethod, setAddMethod] = React.useState<AddMethodState>('')
-  const [showDefaultFooter, setShowDefaultFooter] =
-    React.useState<boolean>(true)
 
   function onSuccess() {
     onClose()
@@ -82,15 +80,13 @@ export function AddAccountModal({
           {addMethod === AddAccountMethodTypes.importSeed && (
             <SeedWords setAddMethod={setAddMethod} onSuccess={onSuccess} />
           )}
-          {showDefaultFooter && (
-            <Modal.Footer>
-              <Flex justifyContent="flex-end">
-                <Button type="submit" form="add-account-form">
-                  Save
-                </Button>
-              </Flex>
-            </Modal.Footer>
-          )}
+          <Modal.Footer>
+            <Flex justifyContent="flex-end">
+              <Button type="submit" form="add-account-form">
+                Save
+              </Button>
+            </Flex>
+          </Modal.Footer>
         </ScaleFade>
       )}
     </Modal>

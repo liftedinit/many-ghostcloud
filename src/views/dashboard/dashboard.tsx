@@ -75,7 +75,7 @@ export function Dashboard() {
     return (
       <Container maxW="4xl" minH="80vh">
         <Box
-          width={{ base: '100%', md: '40vw' }}
+          width={{ base: '100%', sm: '400px' }}
           my={10}
           mx="auto"
           py={8}

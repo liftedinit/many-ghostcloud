@@ -198,13 +198,16 @@ export default function Header() {
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            border: `1px solid ${theme.colors.gray[100]}`,
-                            p: 2,
+                            border: `1px solid ${theme.colors.gray[300]}`,
+                            py: 2,
+                            px: 4,
+                            borderRadius: '4px',
                             cursor: 'pointer',
                             transition: 'background 1s',
                             background: copied
                               ? theme.colors.gray[300]
                               : 'none',
+                            width: 'fit-content',
                           }}
                           onClick={() => {
                             setCopied(true)
@@ -216,13 +219,11 @@ export default function Header() {
                         >
                           <Box
                             sx={{
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
                               pr: 22,
                             }}
                           >
-                            {account?.address}
+                            {account?.address.slice(0, 4)}...
+                            {account?.address.slice(-4)}
                           </Box>
                           <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
                         </Box>
