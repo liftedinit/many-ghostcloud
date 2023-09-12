@@ -11,6 +11,7 @@ import {
   VStack,
 } from '@liftedinit/ui'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { SocialLogin } from '../social-login'
 import { CreateAccount } from './create-account'
@@ -39,9 +40,11 @@ export function AddAccountModal({
   onClose: () => void
 }) {
   const [addMethod, setAddMethod] = React.useState<AddMethodState>('')
+  const navigate = useNavigate()
 
   function onSuccess() {
     onClose()
+    navigate('/dashboard')
   }
 
   const hasAddMethod = typeof addMethod === 'number'

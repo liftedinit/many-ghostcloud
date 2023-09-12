@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PlusIcon } from '@liftedinit/ui'
 import {
   Box,
@@ -7,17 +8,14 @@ import {
   Grid,
   GridItem,
   Heading,
-  Text,
   useMediaQuery,
   useDisclosure,
-  useTheme,
 } from '@chakra-ui/react'
 import { useAccountsStore } from '../../features/accounts'
 import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
-import { AddAccountModal } from '../../features/accounts/components/add-account-modal'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -32,12 +30,7 @@ export function Dashboard() {
     onOpen: confirmDeleteOnOpen,
     onClose: confirmDeleteOnClose,
   } = useDisclosure()
-  const {
-    isOpen: isAddModalOpen,
-    onOpen: onAddModalOpen,
-    onClose: onAddModalClose,
-  } = useDisclosure()
-  const theme = useTheme()
+
   const [isMobile] = useMediaQuery('(max-width: 640px)')
   const [deployments, setDeployments] = useState([
     {
@@ -70,35 +63,14 @@ export function Dashboard() {
     setActiveDeploymentUuid(uuid)
     createDeploymentOnOpen()
   }
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    isAnonymous && navigate('/')
+  }, [isAnonymous, navigate])
 
   if (isAnonymous) {
-    return (
-      <Container maxW="4xl" minH="80vh">
-        <Box
-          width={{ base: '100%', sm: '400px' }}
-          my={10}
-          mx="auto"
-          py={8}
-          px={4}
-          sx={{
-            border: `1px solid ${theme.colors.gray[300]}`,
-            borderRadius: 4,
-          }}
-          justifyContent="center"
-        >
-          <Text mb={8}>Log in to continue</Text>
-          <Button
-            onClick={() => {
-              onAddModalOpen()
-            }}
-            width={'100%'}
-          >
-            Log In
-          </Button>
-        </Box>
-        <AddAccountModal isOpen={isAddModalOpen} onClose={onAddModalClose} />
-      </Container>
-    )
+    return null
   }
 
   return (
