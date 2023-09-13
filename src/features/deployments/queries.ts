@@ -47,6 +47,37 @@ export function useCreateDeployment() {
   )
 }
 
+export function useUpdateDeployment() {
+  const [, network] = useNetworkContext()
+  const queryClient = useQueryClient()
+  return useMutation<
+    WebDeployInfo,
+    Error,
+    {
+      owner?: Address | string
+      siteName: string
+      siteDescription?: string
+      deploymentSource: DeploymentSource
+      memo?: Memo
+    }
+  >(
+    async (vars: {
+      owner?: Address | string
+      siteName: string
+      siteDescription?: string
+      deploymentSource: DeploymentSource
+      memo?: Memo
+    }) => {
+      return await network?.web.update(vars)
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['web', 'list'])
+      },
+    },
+  )
+}
+
 export function useRemoveDeployment() {
   const [, network] = useNetworkContext()
   const queryClient = useQueryClient()

@@ -25,7 +25,7 @@ import { IoWarning } from 'react-icons/io5'
 import { FaExclamation } from 'react-icons/fa'
 import {
   useCreateDeployment,
-  useRemoveDeployment,
+  useUpdateDeployment,
   WebDeployInfoWithUuid,
 } from '../features/deployments'
 import { DeploymentTypes, DeploymentSource, Archive } from '@liftedinit/many-js'
@@ -87,7 +87,7 @@ export default function CreateDeployment({
   const account = useAccountsStore(s => s.byId.get(s.activeId))
 
   const createDeploymentMutation = useCreateDeployment()
-  const removeDeploymentMutation = useRemoveDeployment()
+  const updateDeploymentMutation = useUpdateDeployment()
 
   const handleInputChange = (event: React.FormEvent) => {
     const { name, value } = event.target as HTMLInputElement
@@ -129,6 +129,9 @@ export default function CreateDeployment({
         return
       }
       const payload: Archive = [0, new Map().set(0, arrayBuffer)]
+      const memo = formState.transactionMemo
+        ? [formState.transactionMemo.toString()]
+        : ['']
       const deploymentData = {
         owner: account?.address,
         siteName: formState.siteName,
@@ -137,48 +140,64 @@ export default function CreateDeployment({
           type: DeploymentTypes.Archive,
           payload,
         } as DeploymentSource,
-        memo: [formState.transactionMemo.toString()],
+        memo,
       }
 
-      // TODO: There could be an error between the website removal and the new deployment creation. Handle this.
-      //       This operation should be atomic.
       if (isRedeploying) {
-        const removeData = {
-          owner: account?.address,
-          siteName: formState.siteName,
-          memo: ['Redeploying'],
-        }
-        removeDeploymentMutation.mutate(removeData)
-        const newDeployments = deployments.filter(
-          (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-        )
-        setDeployments(newDeployments)
+        updateDeploymentMutation.mutate(deploymentData, {
+          onSuccess: returnedData => {
+            if (!returnedData?.deploymentUrl) {
+              // Handle the error, perhaps set some state or throw an error
+              throw new Error('Deployment URL is missing')
+            }
+
+            const returnedDataWithUuid: WebDeployInfoWithUuid = {
+              uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
+              ...returnedData,
+            }
+
+            const newDeployments = deployments.filter(
+              (deployment: any) => deployment.uuid !== activeDeploymentUuid,
+            )
+
+            setDeployments([...newDeployments, returnedDataWithUuid])
+
+            setIsSubmitting(false)
+            setIsComplete(true)
+            setIsRedeploying(false)
+          },
+          onError: error => {
+            setIsSubmitting(false)
+            setError(error as Error)
+            setIsRedeploying(false)
+          },
+        })
+      } else {
+        createDeploymentMutation.mutate(deploymentData, {
+          onSuccess: returnedData => {
+            if (!returnedData?.deploymentUrl) {
+              // Handle the error, perhaps set some state or throw an error
+              throw new Error('Deployment URL is missing')
+            }
+
+            const returnedDataWithUuid: WebDeployInfoWithUuid = {
+              uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
+              ...returnedData,
+            }
+
+            setDeployments([...deployments, returnedDataWithUuid])
+
+            setIsSubmitting(false)
+            setIsComplete(true)
+            setIsRedeploying(false)
+          },
+          onError: error => {
+            setIsSubmitting(false)
+            setError(error as Error)
+            setIsRedeploying(false)
+          },
+        })
       }
-
-      createDeploymentMutation.mutate(deploymentData, {
-        onSuccess: returnedData => {
-          if (!returnedData?.deploymentUrl) {
-            // Handle the error, perhaps set some state or throw an error
-            throw new Error('Deployment URL is missing')
-          }
-
-          const returnedDataWithUuid: WebDeployInfoWithUuid = {
-            uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
-            ...returnedData,
-          }
-
-          setDeployments([...deployments, returnedDataWithUuid])
-
-          setIsSubmitting(false)
-          setIsComplete(true)
-          setIsRedeploying(false)
-        },
-        onError: error => {
-          setIsSubmitting(false)
-          setError(error as Error)
-          setIsRedeploying(false)
-        },
-      })
     } else {
       setIsSubmitting(false)
       setError(new Error('No zip file selected'))
