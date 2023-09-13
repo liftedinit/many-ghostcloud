@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PlusIcon } from '@liftedinit/ui'
 import {
   Box,
@@ -9,14 +10,12 @@ import {
   Heading,
   useMediaQuery,
   useDisclosure,
-  useTheme,
 } from '@chakra-ui/react'
 import { useAccountsStore } from '../../features/accounts'
 import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
-import { SocialLogin } from '../../features/accounts/components/social-login'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -31,7 +30,7 @@ export function Dashboard() {
     onOpen: confirmDeleteOnOpen,
     onClose: confirmDeleteOnClose,
   } = useDisclosure()
-  const theme = useTheme()
+
   const [isMobile] = useMediaQuery('(max-width: 640px)')
   const [deployments, setDeployments] = useState([
     {
@@ -64,34 +63,20 @@ export function Dashboard() {
     setActiveDeploymentUuid(uuid)
     createDeploymentOnOpen()
   }
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    isAnonymous && navigate('/')
+  }, [isAnonymous, navigate])
 
   if (isAnonymous) {
-    return (
-      <Container maxW="4xl" minH="80vh">
-        <Box
-          width={{ base: '100%', md: '40vw' }}
-          my={10}
-          mx="auto"
-          py={8}
-          px={4}
-          sx={{
-            border: `1px solid ${theme.colors.gray[300]}`,
-            borderRadius: 4,
-          }}
-          justifyContent="center"
-        >
-          <SocialLogin onSuccess={() => {}} />
-        </Box>
-      </Container>
-    )
+    return null
   }
 
   return (
     <>
       <Container maxWidth="100%">
         <Container maxW="4xl" minH={'80vh'}>
-          <Box mt={4}>Logged in as {account?.name}</Box>
-
           <Box py={8}>
             <Grid
               templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}

@@ -1,52 +1,93 @@
+import React from 'react'
 import {
   Box,
   Container,
-  Flex,
-  HStack,
+  Grid,
+  GridItem,
   Image,
+  Icon,
   IconButton,
   useDisclosure,
   Stack,
   Link as ChakraLink,
   useTheme,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  Text,
 } from '@chakra-ui/react'
 import { Link as ReactRouterLink } from 'react-router-dom'
 import { IoMdMenu, IoMdClose } from 'react-icons/io'
+import { BiCheck, BiCopy, BiSolidUser } from 'react-icons/bi'
+import { AnonymousIdentity } from '@liftedinit/many-js'
+
+import { useAccountsStore } from '../features/accounts'
 
 import logo from '../assets/logo-black.png'
 
 interface Props {
   children: React.ReactNode
-  href: string
-  onClose: () => void
+  href?: string
+  onClick: () => void
+  sx?: any
 }
 
-const Links = [
-  {
-    label: 'Dashboard',
-    href: '/dashboard',
-  },
-]
-
 const NavLink = (props: Props) => {
-  const { children, href, onClose } = props
+  const { children, href, onClick, sx } = props
+
+  if (!href) {
+    return (
+      <Box
+        px={2}
+        py={1}
+        onClick={() => onClick()}
+        sx={{ ...sx, cursor: 'pointer' }}
+      >
+        {children}
+      </Box>
+    )
+  }
 
   return (
-    <Box
-      as={ReactRouterLink}
-      px={2}
-      py={1}
-      rounded="md"
-      to={href}
-      onClick={() => onClose()}
-    >
+    <Box as={ReactRouterLink} px={2} py={1} to={href} onClick={() => onClick()}>
       {children}
     </Box>
   )
 }
 
-export default function Header() {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+export default function Header({ onAddModalOpen }: any) {
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+  const isAnonymous = account?.identity instanceof AnonymousIdentity
+  const [copied, setCopied] = React.useState<boolean>(false)
+
+  const {
+    isOpen: menuOpen,
+    onOpen: onMenuOpen,
+    onClose: onMenuClose,
+  } = useDisclosure()
+
+  const {
+    isOpen: accountOpen,
+    onOpen: onAccountOpen,
+    onClose: onAccountClose,
+  } = useDisclosure()
+
+  const { deleteAccount, accounts } = useAccountsStore(
+    ({ byId, deleteAccount }) => ({
+      deleteAccount,
+      accounts: Array.from(byId),
+    }),
+  )
+
+  const handleLogin = () => {
+    onAddModalOpen()
+  }
+
+  const handleLogout = () => {
+    deleteAccount(accounts[1][0])
+  }
+
   const theme = useTheme()
 
   return (
@@ -56,69 +97,174 @@ export default function Header() {
       data-testid="header"
     >
       <Container maxW="4xl">
-        <Flex h={16} alignItems="center" justifyContent="space-between">
-          <IconButton
-            size="lg"
-            icon={isOpen ? <IoMdClose /> : <IoMdMenu />}
-            aria-label="Open Menu"
-            onClick={isOpen ? onClose : onOpen}
-            bg={theme.colors.white}
-            sx={{
-              display: { base: 'flex', md: 'none' },
-              justifyContent: 'center',
-            }}
-          />
-          <HStack alignItems="center" sx={{ 'a:focus': { boxShadow: 'none' } }}>
-            <ChakraLink as={ReactRouterLink} to="/">
+        <Grid templateColumns={`repeat(3, 1fr)`}>
+          <GridItem
+            colSpan={1}
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'flex-start'}
+            py={2}
+          >
+            {!isAnonymous && (
+              <Box
+                sx={{
+                  '& section:focus': { boxShadow: 'none' },
+                }}
+              >
+                <Popover
+                  isOpen={menuOpen}
+                  onClose={onMenuClose}
+                  placement="bottom-start"
+                >
+                  <PopoverTrigger>
+                    <IconButton
+                      size="lg"
+                      icon={menuOpen ? <IoMdClose /> : <IoMdMenu />}
+                      aria-label="Open Menu"
+                      onClick={menuOpen ? onMenuClose : onMenuOpen}
+                      bg={theme.colors.white}
+                      sx={{
+                        display: { base: 'flex', md: 'none' },
+                        justifyContent: 'center',
+                        ml: -5,
+                      }}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <PopoverBody
+                      sx={{ boxShadow: '0 2px 3px 1px rgba(0, 0, 0, 0.06)' }}
+                      p={4}
+                    >
+                      <Stack as="nav" spacing={4}>
+                        <NavLink href="/dashboard" onClick={onMenuClose}>
+                          Dashboard
+                        </NavLink>
+                      </Stack>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+              </Box>
+            )}
+          </GridItem>
+          <GridItem
+            colSpan={1}
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'center'}
+            py={2}
+          >
+            <ChakraLink as={ReactRouterLink} to="/" p={2}>
               <Image h={4} src={logo} sx={{ minWidth: '200px' }} />
             </ChakraLink>
-          </HStack>
-          <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
-            <Box
-              as={ReactRouterLink}
-              to="/dashboard"
-              sx={{ fontWeight: 'bold' }}
-            >
-              Dashboard
-            </Box>
-          </HStack>
-          <Flex
-            alignItems="center"
-            sx={{
-              display: { base: 'flex', md: 'none' },
-              width: 14,
-            }}
-          ></Flex>
-        </Flex>
-
-        {isOpen ? (
-          <Box
-            display={{ md: 'none' }}
-            sx={{
-              position: 'relative',
-            }}
+          </GridItem>
+          <GridItem
+            colSpan={1}
+            display={'flex'}
+            alignItems={'center'}
+            justifyContent={'flex-end'}
+            py={2}
           >
+            {!isAnonymous && (
+              <Box
+                display={{ base: 'none', md: 'flex' }}
+                as={ReactRouterLink}
+                to="/dashboard"
+                sx={{ fontWeight: 'bold', mr: 3 }}
+              >
+                Dashboard
+              </Box>
+            )}
+
             <Box
-              display={{ md: 'none' }}
               sx={{
-                py: 4,
-                width: '200px',
-                borderRadius: 2,
-                background: theme.colors.gray[50],
-                position: 'absolute',
-                boxShadow: '0 2px 3px 1px rgba(0, 0, 0, 0.06)',
+                '& section:focus': { boxShadow: 'none' },
               }}
             >
-              <Stack as="nav" spacing={4}>
-                {Links.map(({ label, href }) => (
-                  <NavLink key={`nav-${label}`} href={href} onClose={onClose}>
-                    {label}
-                  </NavLink>
-                ))}
-              </Stack>
+              <Popover
+                isOpen={accountOpen}
+                onClose={onAccountClose}
+                placement="bottom-start"
+              >
+                <PopoverTrigger>
+                  <IconButton
+                    size="lg"
+                    icon={<BiSolidUser />}
+                    aria-label="Account"
+                    onClick={accountOpen ? onAccountClose : onAccountOpen}
+                    bg={theme.colors.white}
+                    mr={-4}
+                  />
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody
+                    sx={{ boxShadow: '0 2px 3px 1px rgba(0, 0, 0, 0.06)' }}
+                    p={4}
+                  >
+                    <Stack as="nav" spacing={4}>
+                      {!isAnonymous && (
+                        <>
+                          <Text fontWeight={'bold'}>{account?.name}</Text>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              border: `1px solid ${theme.colors.gray[300]}`,
+                              py: 2,
+                              px: 4,
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'background 1s',
+                              background: copied
+                                ? theme.colors.gray[300]
+                                : 'none',
+                              width: 'fit-content',
+                            }}
+                            onClick={() => {
+                              setCopied(true)
+                              setTimeout(() => setCopied(false), 1000)
+                              navigator.clipboard.writeText(
+                                account?.address || '',
+                              )
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                pr: 22,
+                              }}
+                            >
+                              {account?.address.slice(0, 4)}...
+                              {account?.address.slice(-4)}
+                            </Box>
+                            <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
+                          </Box>
+                        </>
+                      )}
+
+                      {isAnonymous ? (
+                        <NavLink
+                          onClick={() => {
+                            handleLogin()
+                          }}
+                        >
+                          Log In
+                        </NavLink>
+                      ) : (
+                        <NavLink
+                          onClick={() => {
+                            handleLogout()
+                            onAccountClose()
+                          }}
+                        >
+                          Log Out
+                        </NavLink>
+                      )}
+                    </Stack>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
             </Box>
-          </Box>
-        ) : null}
+          </GridItem>
+        </Grid>
       </Container>
     </Container>
   )

@@ -16,6 +16,8 @@ import logo from 'assets/logo192-white.png'
 import hero from 'assets/hero.png'
 import { GoLock, GoShieldCheck, GoSmiley } from 'react-icons/go'
 import React from 'react'
+import { useAccountsStore } from '../../features/accounts'
+import { AnonymousIdentity } from '@liftedinit/many-js'
 
 interface FeatureProps {
   title: string
@@ -58,8 +60,10 @@ const Feature = ({ title, text, icon }: FeatureProps) => {
   )
 }
 
-export function Home() {
+export function Home({ onAddModalOpen }: any) {
   const theme = useTheme()
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+  const isAnonymous = account?.identity instanceof AnonymousIdentity
 
   return (
     <>
@@ -96,9 +100,15 @@ export function Home() {
                 with tokens, wallets, or complex concepts.
               </Text>
               <Stack spacing={6} direction="row">
-                <Button as={ReactRouterLink} to="/dashboard" variant="green">
-                  Get started
-                </Button>
+                {isAnonymous ? (
+                  <Button onClick={() => onAddModalOpen()} variant="green">
+                    Get started
+                  </Button>
+                ) : (
+                  <Button as={ReactRouterLink} to="/dashboard" variant="green">
+                    Get started
+                  </Button>
+                )}
               </Stack>
             </Stack>
           </Box>
@@ -113,6 +123,7 @@ export function Home() {
                 fontWeight={600}
                 fontSize={{ base: '1xl', sm: '2xl', md: '3xl' }}
                 lineHeight="110%"
+                textAlign="center"
               >
                 Simplicity Meets Decentralization
               </Heading>
