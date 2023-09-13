@@ -8,6 +8,8 @@ import {
   ModalBody,
   ModalCloseButton,
 } from '@chakra-ui/react'
+import { useRemoveDeployment } from 'features/deployments/queries'
+import { useAccountsStore } from '../features/accounts'
 
 export default function ConfirmDelete({
   onClose,
@@ -22,14 +24,27 @@ export default function ConfirmDelete({
   activeDeploymentUuid: any
   setDeployments: any
 }) {
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+
   const handleYes = () => {
-    setDeployments(
-      deployments.filter(
-        (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-      ),
+    // TODO: Is there a better way of doing this?
+    const currentDeployment = deployments.find(
+      (deployment: any) => deployment.uuid === activeDeploymentUuid,
     )
+    const removeData = {
+      owner: account?.address,
+      siteName: currentDeployment.siteName,
+      memo: currentDeployment.memo,
+    }
+    removeDeploymentMutation.mutate(removeData)
+    const newDeployments = deployments.filter(
+      (deployment: any) => deployment.uuid !== activeDeploymentUuid,
+    )
+    setDeployments(newDeployments)
     onClose()
   }
+
+  const removeDeploymentMutation = useRemoveDeployment()
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

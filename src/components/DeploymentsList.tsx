@@ -118,12 +118,12 @@ export default function DeploymentsList(props: any) {
         display={isMobile ? 'none' : 'flex'}
       ></GridItem>
       {deployments.map((deployment: any) => {
-        const { uuid, siteName, siteDescription, siteUrl } = deployment
+        const { uuid, siteName, siteDescription, deploymentUrl } = deployment
         return (
           <Fragment key={uuid}>
             <Td label="Name" value={siteName} />
             <Td label="Description" value={siteDescription} />
-            <Td label="URL" value={siteUrl} />
+            <Td label="URL" value={deploymentUrl} />
 
             <GridItem
               colSpan={1}

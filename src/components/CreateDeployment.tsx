@@ -18,25 +18,32 @@ import {
   Heading,
   Textarea,
 } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { BiCheck, BiSolidCloudUpload } from 'react-icons/bi'
 import { IoWarning } from 'react-icons/io5'
 import { FaExclamation } from 'react-icons/fa'
-import { v4 as uuidv4 } from 'uuid'
+import {
+  useCreateDeployment,
+  useRemoveDeployment,
+  WebDeployInfoWithUuid,
+} from '../features/deployments'
+import { DeploymentTypes, DeploymentSource, Archive } from '@liftedinit/many-js'
+import { useAccountsStore } from '../features/accounts'
+import { v5 as uuidv5 } from 'uuid'
 
 interface FormState {
   siteName: string
   siteDescription: string
   zipFile: File | undefined
-  transactionMemo: string
+  transactionMemo: string[]
 }
 
 const defaultState = {
   siteName: '',
   siteDescription: '',
   zipFile: undefined,
-  transactionMemo: '',
+  transactionMemo: [''],
 }
 
 export default function CreateDeployment({
@@ -45,12 +52,16 @@ export default function CreateDeployment({
   deployments,
   activeDeploymentUuid,
   setDeployments,
+  isRedeploying,
+  setIsRedeploying,
 }: {
   onClose: () => void
   isOpen: boolean
   deployments: any
   activeDeploymentUuid: any
   setDeployments: any
+  isRedeploying: boolean
+  setIsRedeploying: any
 }) {
   const theme = useTheme()
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
@@ -59,7 +70,7 @@ export default function CreateDeployment({
         'application/zip': [],
       },
       maxFiles: 1,
-      maxSize: 5242880,
+      maxSize: 5242546, // This is the limit supported by the backend, including the envelope and header overhead
       onDrop: files => {
         setFormState({
           ...formState,
@@ -70,9 +81,13 @@ export default function CreateDeployment({
   const [formState, setFormState] = useState<FormState>(defaultState)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
-  const [isRedeploying, setIsRedeploying] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
   const isValid = !formState.zipFile || !formState.siteName.length
+
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+
+  const createDeploymentMutation = useCreateDeployment()
+  const removeDeploymentMutation = useRemoveDeployment()
 
   const handleInputChange = (event: React.FormEvent) => {
     const { name, value } = event.target as HTMLInputElement
@@ -97,80 +112,104 @@ export default function CreateDeployment({
         transactionMemo: foundDeployment.transactionMemo,
         zipFile: undefined,
       })
-      setIsRedeploying(true)
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setIsSubmitting(true)
 
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsComplete(true)
-
-      let deploymentsClone = structuredClone(deployments)
-
-      let deployment = {
-        uuid: uuidv4(),
+    if (formState.zipFile) {
+      let arrayBuffer: ArrayBuffer
+      try {
+        arrayBuffer = await fileToArrayBuffer(formState.zipFile)
+      } catch (error) {
+        setIsSubmitting(false)
+        setError(error as Error)
+        return
+      }
+      const payload: Archive = [0, new Map().set(0, arrayBuffer)]
+      const deploymentData = {
+        owner: account?.address,
         siteName: formState.siteName,
         siteDescription: formState.siteDescription,
-        siteUrl:
-          'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
-        transactionMemo: formState.transactionMemo,
+        deploymentSource: {
+          type: DeploymentTypes.Archive,
+          payload,
+        } as DeploymentSource,
+        memo: [formState.transactionMemo.toString()],
       }
 
+      // TODO: There could be an error between the website removal and the new deployment creation. Handle this.
+      //       This operation should be atomic.
       if (isRedeploying) {
-        deploymentsClone = deploymentsClone.filter(
+        const removeData = {
+          owner: account?.address,
+          siteName: formState.siteName,
+          memo: ['Redeploying'],
+        }
+        removeDeploymentMutation.mutate(removeData)
+        const newDeployments = deployments.filter(
           (deployment: any) => deployment.uuid !== activeDeploymentUuid,
         )
-        deployment.uuid = activeDeploymentUuid
+        setDeployments(newDeployments)
       }
 
-      setDeployments([...deploymentsClone, deployment])
-    }, 1000)
+      createDeploymentMutation.mutate(deploymentData, {
+        onSuccess: returnedData => {
+          if (!returnedData?.deploymentUrl) {
+            // Handle the error, perhaps set some state or throw an error
+            throw new Error('Deployment URL is missing')
+          }
 
-    // const formData = new FormData()
-    // formData.append('siteName', formState.siteName)
-    // formData.append('siteDescription', formState.siteDescription)
-    // formData.append('transactionMemo', formState.transactionMemo)
-    // if (formState.zipFile) {
-    //   formData.append('file', formState.zipFile, formState.zipFile.name)
-    // }
-    // fetch('http://server.com/api/upload', {
-    //   method: 'POST',
-    //   body: formData,
-    // })
-    //   .then(response => response.json())
-    //   .then(json => {
-    //     setDeployments([
-    //       ...deployments,
-    //       {
-    //         uuid: json.uuid,
-    //         siteName: formState.siteName,
-    //         siteUrl: json.url,
-    //         siteDescription: formState.siteDescription,
-    //         transactionMemo: formState.transactionMemo,
-    //       },
-    //     ])
-    //     setIsSubmitting(false)
-    //     setIsComplete(true)
-    //   })
-    //   .catch(() => {
-    //     setIsSubmitting(false)
-    //     setIsComplete(true)
-    //     setError(true)
-    //   })
+          const returnedDataWithUuid: WebDeployInfoWithUuid = {
+            uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
+            ...returnedData,
+          }
+
+          setDeployments([...deployments, returnedDataWithUuid])
+
+          setIsSubmitting(false)
+          setIsComplete(true)
+          setIsRedeploying(false)
+        },
+        onError: error => {
+          setIsSubmitting(false)
+          setError(error as Error)
+          setIsRedeploying(false)
+        },
+      })
+    } else {
+      setIsSubmitting(false)
+      setError(new Error('No zip file selected'))
+      setIsRedeploying(false)
+    }
   }
 
   const acceptedFileItems = acceptedFiles.map(file => {
     return `${(file as any).path} - ${(file.size / 1024 / 1024).toFixed(1)} MB`
   })
 
+  const fileToArrayBuffer = (file: File): Promise<ArrayBuffer> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onload = event => {
+        resolve((event.target?.result as ArrayBuffer) || new ArrayBuffer(0))
+      }
+
+      reader.onerror = error => {
+        reject(error)
+      }
+
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
   const handleClose = () => {
     onClose()
     setIsComplete(false)
-    setError(false)
+    setError(null)
     setFormState(defaultState)
   }
 
