@@ -20,7 +20,7 @@
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
     "@fontsource/roboto": "^4.5.8",
-    "@liftedinit/many-js": "^0.1.0-alpha.11",
+    "@liftedinit/many-js": "github:fmorency/many-js#d5ed817cbb6f8d3a4b5502c394317e8cb8830fc0",
     "@liftedinit/ui": "github:liftedinit/lifted-ui",
     "@web3auth/openlogin-adapter": "^2.1.3",
     "@web3auth/web3auth": "^2.1.3",

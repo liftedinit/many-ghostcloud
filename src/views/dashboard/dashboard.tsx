@@ -16,6 +16,7 @@ import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
+import { useDeploymentList } from '../../features/deployments'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -32,6 +33,7 @@ export function Dashboard() {
   } = useDisclosure()
 
   const [isMobile] = useMediaQuery('(max-width: 640px)')
+  useDeploymentList({ address: account?.address })
   const [deployments, setDeployments] = useState([
     {
       uuid: 'de35cecd-4be7-4d7c-ae53-87da0dabdc80',
