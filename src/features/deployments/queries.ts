@@ -106,7 +106,7 @@ export function useRemoveDeployment() {
 }
 
 interface DeploymentsListArgs {
-  address?: string
+  address?: Address
   filter?: {}
 }
 

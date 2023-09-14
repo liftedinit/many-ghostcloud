@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware'
 import localforage from 'localforage'
 import {
   AnonymousIdentity,
-  ANON_IDENTITY,
   Ed25519KeyPairIdentity,
+  Address,
 } from '@liftedinit/many-js'
 import { replacer, reviver } from 'shared'
 import { Account, AccountId, AccountsState } from '../types'
@@ -24,7 +24,7 @@ const initialState: AccountsState = {
       {
         name: 'Anonymous',
         identity: new AnonymousIdentity(),
-        address: ANON_IDENTITY,
+        address: Address.anonymous(),
       },
     ],
   ]),
@@ -38,7 +38,7 @@ export const useAccountsStore = create<AccountsState & AccountMethods>(
       createAccount: async (account: Partial<Account>) => {
         try {
           if (account?.identity) {
-            const address = (await account.identity.getAddress()).toString()
+            const address = await account.identity.getAddress()
             account.address = address
           }
         } catch (error) {

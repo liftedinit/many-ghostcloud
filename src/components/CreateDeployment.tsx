@@ -24,45 +24,48 @@ import { BiCheck, BiSolidCloudUpload } from 'react-icons/bi'
 import { IoWarning } from 'react-icons/io5'
 import { FaExclamation } from 'react-icons/fa'
 import {
+  Deployment,
+  fileToArrayBuffer,
+  handleDeploymentCreationSuccess,
   useCreateDeployment,
   useUpdateDeployment,
-  WebDeployInfoWithUuid,
 } from '../features/deployments'
-import { DeploymentTypes, DeploymentSource, Archive } from '@liftedinit/many-js'
+import {
+  DeploymentTypes,
+  DeploymentSource,
+  Archive,
+  WebDeployInfo,
+  WebDeployParams,
+} from '@liftedinit/many-js'
 import { useAccountsStore } from '../features/accounts'
-import { v5 as uuidv5 } from 'uuid'
+
+const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backend, including the envelope and header overhead
 
 interface FormState {
   siteName: string
-  siteDescription: string
+  siteDescription?: string
   zipFile: File | undefined
-  transactionMemo: string[]
+  transactionMemo?: string[]
 }
 
-const defaultState = {
+const initialFormState = {
   siteName: '',
   siteDescription: '',
   zipFile: undefined,
-  transactionMemo: [''],
+  transactionMemo: undefined,
 }
 
-export default function CreateDeployment({
-  onClose,
-  isOpen,
-  deployments,
-  activeDeploymentUuid,
-  setDeployments,
-  isRedeploying,
-  setIsRedeploying,
-}: {
+type CreateDeploymentProps = {
   onClose: () => void
   isOpen: boolean
-  deployments: any
-  activeDeploymentUuid: any
-  setDeployments: any
+  deployments: Deployment[]
+  activeDeploymentUuid: string
+  setDeployments: (deployments: Deployment[]) => void
   isRedeploying: boolean
-  setIsRedeploying: any
-}) {
+  setIsRedeploying: (value: boolean) => void
+}
+
+export default function CreateDeployment(props: CreateDeploymentProps) {
   const theme = useTheme()
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
     useDropzone({
@@ -70,7 +73,7 @@ export default function CreateDeployment({
         'application/zip': [],
       },
       maxFiles: 1,
-      maxSize: 5242546, // This is the limit supported by the backend, including the envelope and header overhead
+      maxSize: MAX_FILE_SIZE_BYTES,
       onDrop: files => {
         setFormState({
           ...formState,
@@ -78,7 +81,7 @@ export default function CreateDeployment({
         })
       },
     })
-  const [formState, setFormState] = useState<FormState>(defaultState)
+  const [formState, setFormState] = useState<FormState>(initialFormState)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -98,10 +101,10 @@ export default function CreateDeployment({
   }
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!props.isOpen) return
 
-    const foundDeployment = deployments.find(
-      (deployment: any) => deployment.uuid === activeDeploymentUuid,
+    const foundDeployment = props.deployments.find(
+      (deployment: any) => deployment.uuid === props.activeDeploymentUuid,
     )
 
     if (foundDeployment) {
@@ -113,7 +116,21 @@ export default function CreateDeployment({
         zipFile: undefined,
       })
     }
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleMutation = async (
+    data: WebDeployParams,
+    isRedeploying: boolean,
+    mutations: { create: any; update: any },
+    callbacks: { onSuccess: any; onError: any },
+  ) => {
+    const mutation = isRedeploying ? mutations.update : mutations.create
+
+    mutation.mutate(data, {
+      onSuccess: callbacks.onSuccess,
+      onError: callbacks.onError,
+    })
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -143,65 +160,28 @@ export default function CreateDeployment({
         memo,
       }
 
-      if (isRedeploying) {
-        updateDeploymentMutation.mutate(deploymentData, {
-          onSuccess: returnedData => {
-            if (!returnedData?.deploymentUrl) {
-              // Handle the error, perhaps set some state or throw an error
-              throw new Error('Deployment URL is missing')
-            }
-
-            const returnedDataWithUuid: WebDeployInfoWithUuid = {
-              uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
-              ...returnedData,
-            }
-
-            const newDeployments = deployments.filter(
-              (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-            )
-
-            setDeployments([...newDeployments, returnedDataWithUuid])
-
-            setIsSubmitting(false)
-            setIsComplete(true)
-            setIsRedeploying(false)
-          },
-          onError: error => {
+      await handleMutation(
+        deploymentData,
+        props.isRedeploying,
+        { create: createDeploymentMutation, update: updateDeploymentMutation },
+        {
+          onSuccess: (returnedData: WebDeployInfo) =>
+            handleDeploymentCreationSuccess({
+              returnedData,
+              deployments: props.deployments,
+              activeDeploymentUuid: props.activeDeploymentUuid,
+              setDeployments: props.setDeployments,
+              setIsSubmitting,
+              setIsComplete,
+              setIsRedeploying: props.setIsRedeploying,
+            }),
+          onError: (error: Error) => {
             setIsSubmitting(false)
             setError(error as Error)
-            setIsRedeploying(false)
+            props.setIsRedeploying(false)
           },
-        })
-      } else {
-        createDeploymentMutation.mutate(deploymentData, {
-          onSuccess: returnedData => {
-            if (!returnedData?.deploymentUrl) {
-              // Handle the error, perhaps set some state or throw an error
-              throw new Error('Deployment URL is missing')
-            }
-
-            const returnedDataWithUuid: WebDeployInfoWithUuid = {
-              uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
-              ...returnedData,
-            }
-
-            setDeployments([...deployments, returnedDataWithUuid])
-
-            setIsSubmitting(false)
-            setIsComplete(true)
-            setIsRedeploying(false)
-          },
-          onError: error => {
-            setIsSubmitting(false)
-            setError(error as Error)
-            setIsRedeploying(false)
-          },
-        })
-      }
-    } else {
-      setIsSubmitting(false)
-      setError(new Error('No zip file selected'))
-      setIsRedeploying(false)
+        },
+      )
     }
   }
 
@@ -209,31 +189,15 @@ export default function CreateDeployment({
     return `${(file as any).path} - ${(file.size / 1024 / 1024).toFixed(1)} MB`
   })
 
-  const fileToArrayBuffer = (file: File): Promise<ArrayBuffer> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-
-      reader.onload = event => {
-        resolve((event.target?.result as ArrayBuffer) || new ArrayBuffer(0))
-      }
-
-      reader.onerror = error => {
-        reject(error)
-      }
-
-      reader.readAsArrayBuffer(file)
-    })
-  }
-
   const handleClose = () => {
-    onClose()
+    props.onClose()
     setIsComplete(false)
     setError(null)
-    setFormState(defaultState)
+    setFormState(initialFormState)
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={props.isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Create Deployment</ModalHeader>
