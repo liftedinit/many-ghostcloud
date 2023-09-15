@@ -72,63 +72,59 @@ export function Dashboard() {
   }
 
   return (
-    <>
-      <Container maxWidth="100%">
-        <Container maxW="4xl" minH={'80vh'}>
-          <Box py={8}>
-            <Grid
-              templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}
-              gap={0}
-              mt={4}
+    <Container maxW="4xl" minH={'80vh'}>
+      <Box py={8}>
+        <Grid
+          templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}
+          gap={0}
+          mt={4}
+        >
+          <GridItem colSpan={1}>
+            <Heading as="h2" size="md" my={5}>
+              Deployments
+            </Heading>
+          </GridItem>
+          <GridItem
+            colSpan={1}
+            display="flex"
+            justifyContent={isMobile ? 'flex-start' : 'flex-end'}
+            alignItems="center"
+          >
+            <Button
+              onClick={() => {
+                createDeploymentOnOpen()
+                setActiveDeploymentUuid('')
+              }}
+              leftIcon={<PlusIcon />}
             >
-              <GridItem colSpan={1}>
-                <Heading as="h2" size="md" my={5}>
-                  Deployments
-                </Heading>
-              </GridItem>
-              <GridItem
-                colSpan={1}
-                display="flex"
-                justifyContent={isMobile ? 'flex-start' : 'flex-end'}
-                alignItems="center"
-              >
-                <Button
-                  onClick={() => {
-                    createDeploymentOnOpen()
-                    setActiveDeploymentUuid('')
-                  }}
-                  leftIcon={<PlusIcon />}
-                >
-                  Create Deployment
-                </Button>
-              </GridItem>
-            </Grid>
+              Create Deployment
+            </Button>
+          </GridItem>
+        </Grid>
 
-            <DeploymentsList
-              deployments={deployments}
-              onDelete={handleDeleteDeployment}
-              onEdit={handleEditDeployment}
-            />
-          </Box>
+        <DeploymentsList
+          deployments={deployments}
+          onDelete={handleDeleteDeployment}
+          onEdit={handleEditDeployment}
+        />
+      </Box>
 
-          <CreateDeployment
-            isOpen={createDeploymentIsOpen}
-            onClose={createDeploymentOnClose}
-            deployments={deployments}
-            activeDeploymentUuid={activeDeploymentUuid}
-            setDeployments={setDeployments}
-            isRedeploying={isRedeploying}
-            setIsRedeploying={setIsRedeploying}
-          />
-          <ConfirmDelete
-            isOpen={confirmDeleteIsOpen}
-            onClose={confirmDeleteOnClose}
-            deployments={deployments}
-            activeDeploymentUuid={activeDeploymentUuid}
-            setDeployments={setDeployments}
-          />
-        </Container>
-      </Container>
-    </>
+      <CreateDeployment
+        isOpen={createDeploymentIsOpen}
+        onClose={createDeploymentOnClose}
+        deployments={deployments}
+        activeDeploymentUuid={activeDeploymentUuid}
+        setDeployments={setDeployments}
+	isRedeploying={isRedeploying}
+	setIsRedeploying={setIsRedeploying}
+      />
+      <ConfirmDelete
+        isOpen={confirmDeleteIsOpen}
+        onClose={confirmDeleteOnClose}
+        deployments={deployments}
+        activeDeploymentUuid={activeDeploymentUuid}
+        setDeployments={setDeployments}
+      />
+    </Container>
   )
 }
