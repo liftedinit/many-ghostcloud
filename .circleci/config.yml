@@ -7,7 +7,7 @@ orbs:
   codecov: codecov/codecov@3.2.4
 
 jobs:
-  test-build:
+  test:
     parameters:
       node_version:
         type: string
@@ -20,7 +20,6 @@ jobs:
       - run:
           name: Run tests
           command: npm run test -- --coverage
-      - codecov/upload
       - run:
           name: Install Playwright
           command: npx playwright install --with-deps
@@ -30,31 +29,9 @@ jobs:
             npm run start &
             pid=$!
             sleep 30
-            npm run test:e2e
+            npm run test:e2e -- --coverage
             kill $pid
-      - when:
-          condition:
-            and:
-              - not:
-                  equal: ["16.20.2", << parameters.node_version >>]
-          steps:
-            # node 17+ workaround https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
-            - run:
-                echo 'export NODE_OPTIONS=--openssl-legacy-provider' >>
-                $BASH_ENV
-      - when:
-          condition:
-            and:
-              - not:
-                  equal: ["16.20.2", << parameters.node_version >>]
-          steps:
-            # node 17+ workaround https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
-            - run:
-                echo 'export NODE_OPTIONS=--openssl-legacy-provider' >>
-                $BASH_ENV
-      - run:
-          name: Build staging app
-          command: npm run build:staging
+      - codecov/upload
 
   create:
     parameters:
@@ -121,7 +98,7 @@ jobs:
 workflows:
   ci:
     jobs:
-      - test-build:
+      - test:
           matrix:
             parameters:
               node_version:
