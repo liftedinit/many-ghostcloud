@@ -54,6 +54,9 @@ export default function Footer() {
           >
             Privacy Policy
           </ChakraLink>
+          <ChakraLink as={ReactRouterLink} to="/status">
+            Status
+          </ChakraLink>
         </Stack>
       </Container>
 

@@ -6,6 +6,7 @@ import {
   Dashboard,
   NotFound,
   PrivacyPolicy,
+  Status,
   TermsOfService,
 } from '../../views'
 import Header from '../../components/Header'
@@ -27,6 +28,7 @@ export function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/status" element={<Status />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>
       <Footer />
