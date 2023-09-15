@@ -18,6 +18,7 @@ import {
   Heading,
   Textarea,
 } from '@chakra-ui/react'
+import { useToast } from '@liftedinit/ui'
 import React, { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { BiCheck, BiSolidCloudUpload } from 'react-icons/bi'
@@ -67,6 +68,7 @@ type CreateDeploymentProps = {
 
 export default function CreateDeployment(props: CreateDeploymentProps) {
   const theme = useTheme()
+  const toast = useToast()
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
     useDropzone({
       accept: {
@@ -75,6 +77,7 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
       maxFiles: 1,
       maxSize: MAX_FILE_SIZE_BYTES,
       onDrop: files => {
+        setError(null)
         setFormState({
           ...formState,
           zipFile: files[0],
@@ -85,15 +88,25 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [siteNameLength, setSiteNameLength] = useState(0)
+  const [siteDescriptionLength, setSiteDescriptionLength] = useState(0)
+  const [transactionMemoLength, setTransactionMemoLength] = useState(0)
   const isValid = !formState.zipFile || !formState.siteName.length
 
   const account = useAccountsStore(s => s.byId.get(s.activeId))
+
+  const remainingChars = (currentLength: number, maxLength: number) =>
+    `${currentLength}/${maxLength}`
 
   const createDeploymentMutation = useCreateDeployment()
   const updateDeploymentMutation = useUpdateDeployment()
 
   const handleInputChange = (event: React.FormEvent) => {
     const { name, value } = event.target as HTMLInputElement
+    if (name === 'siteName') setSiteNameLength(value.length)
+    if (name === 'siteDescription') setSiteDescriptionLength(value.length)
+    if (name === 'transactionMemo') setTransactionMemoLength(value.length)
+
     setFormState({
       ...formState,
       [name]: value,
@@ -166,7 +179,7 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
         { create: createDeploymentMutation, update: updateDeploymentMutation },
         {
           onSuccess: (returnedData: WebDeployInfo) =>
-            handleDeploymentCreationSuccess({
+            handleDeploymentCreationSuccess(setError, {
               returnedData,
               deployments: props.deployments,
               activeDeploymentUuid: props.activeDeploymentUuid,
@@ -178,6 +191,11 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
           onError: (error: Error) => {
             setIsSubmitting(false)
             setError(error as Error)
+            toast({
+              title: 'Error',
+              description: (error as Error).message,
+              status: 'error',
+            })
             props.setIsRedeploying(false)
           },
         },
@@ -261,7 +279,11 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     value={formState.siteName}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={50}
                   />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(siteNameLength, 50)}
+                  </Text>
                 </FormControl>
 
                 <FormControl>
@@ -273,7 +295,11 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     value={formState.siteDescription}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(siteDescriptionLength, 500)}
+                  </Text>
                 </FormControl>
 
                 <FormControl>
@@ -285,7 +311,11 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     value={formState.transactionMemo}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(transactionMemoLength, 500)}
+                  </Text>
                 </FormControl>
 
                 <Box
@@ -341,24 +371,23 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     {acceptedFileItems}
                   </Text>
                 ) : null}
-                {fileRejections.length ? (
-                  <Text
-                    display="flex"
-                    mt={4}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Icon
-                      as={IoWarning}
-                      w={6}
-                      h={6}
-                      mr={2}
-                      color={theme.colors.red[600]}
-                    />
-                    Please only select one zip file that is less than 5MB in
-                    size.
-                  </Text>
-                ) : null}
+                {fileRejections.length > 0 && (
+                  <Box mt={4}>
+                    {fileRejections.map(rejection => (
+                      <Box
+                        key={rejection.file.name}
+                        color={theme.colors.red[600]}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Icon as={IoWarning} w={6} h={6} mr={2} />
+                        {rejection.errors.map(error => (
+                          <Text key={error.code}>{error.message} </Text>
+                        ))}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
               </Stack>
               <Box
                 display="flex"

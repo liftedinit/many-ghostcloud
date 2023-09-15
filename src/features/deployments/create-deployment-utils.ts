@@ -12,15 +12,19 @@ type HandleMutationProps = {
   setIsRedeploying: (value: boolean) => void
 }
 
-export const handleDeploymentCreationSuccess = ({
-  returnedData,
-  deployments,
-  activeDeploymentUuid,
-  setDeployments,
-  setIsSubmitting,
-  setIsComplete,
-  setIsRedeploying,
-}: HandleMutationProps) => {
+export const handleDeploymentCreationSuccess = (
+  setError: (value: Error | null) => void,
+  {
+    returnedData,
+    deployments,
+    activeDeploymentUuid,
+    setDeployments,
+    setIsSubmitting,
+    setIsComplete,
+    setIsRedeploying,
+  }: HandleMutationProps,
+) => {
+  setError(null)
   handleDeploymentCreationMutationSuccess({
     returnedData,
     deployments,
