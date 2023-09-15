@@ -46,6 +46,7 @@ const config: PlaywrightTestConfig = {
     command: 'npm run start',
     url: 'https://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    ignoreHTTPSErrors: true,
   },
 }
 export default config
