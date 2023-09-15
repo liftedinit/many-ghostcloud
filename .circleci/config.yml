@@ -17,6 +17,7 @@ jobs:
     resource_class: medium+
     steps:
       - install-packages
+      - run: mkdir -p test-reports
       - run:
           name: Run tests
           command: npm run test -- --coverage
@@ -25,13 +26,10 @@ jobs:
           command: npx playwright install --with-deps
       - run:
           name: Run Playwright tests
-          command: |
-            npm run start &
-            pid=$!
-            sleep 30
-            npm run test:e2e -- --coverage
-            kill $pid
+          command: npm run test:e2e
       - codecov/upload
+      - store_test_results:
+          path: "test-reports"
 
   create:
     parameters:
