@@ -8,10 +8,12 @@ const devDomains = ['localhost', 'liftedinit.tech']
 
 const initialState = {
   activeId: 0,
-  nextId: 2,
+  nextId: 1,
+  // nextId: 2,
   byId: new Map([
-    [0, { name: 'Localhost', url: 'http://localhost:8000' }],
-    [1, { name: 'Ghostcloud Production', url: '/api', filter: 'ghostcloud' }],
+    // [0, { name: 'Localhost', url: 'http://localhost:8000' }],
+    // [1, { name: 'Ghostcloud Production', url: '/api', filter: 'ghostcloud' }],
+    [0, { name: 'Ghostcloud Production', url: '/api', filter: 'ghostcloud' }],
   ]),
 }
 
