@@ -29,7 +29,7 @@ jobs:
           command: npm run test:e2e
       - codecov/upload
       - store_test_results:
-          path: "test-reports"
+          path: "e2e/test-reports"
 
   create:
     parameters:
