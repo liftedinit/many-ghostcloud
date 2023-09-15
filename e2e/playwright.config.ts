@@ -4,10 +4,12 @@ import type { PlaywrightTestConfig } from '@playwright/test'
 const config: PlaywrightTestConfig = {
   maxFailures: 1,
   use: {
+    headless: true,
     baseURL: 'https://localhost:3000',
     viewport: null,
     ignoreHTTPSErrors: true,
   },
+  workers: process.env.CI ? 1 : undefined,
   projects: [
     {
       name: 'chromium',
