@@ -295,8 +295,9 @@ export default function CreateDeployment({
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
                 <FormControl isRequired>
-                  <FormLabel>Site Name</FormLabel>
+                  <FormLabel htmlFor="siteName">Site Name</FormLabel>
                   <Input
+                    id="siteName"
                     name="siteName"
                     placeholder=""
                     size="lg"
@@ -311,8 +312,11 @@ export default function CreateDeployment({
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Site Description</FormLabel>
+                  <FormLabel htmlFor="siteDescription">
+                    Site Description
+                  </FormLabel>
                   <Textarea
+                    id="siteDescription"
                     name="siteDescription"
                     placeholder=""
                     size="lg"
@@ -327,8 +331,11 @@ export default function CreateDeployment({
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Transaction Memo</FormLabel>
+                  <FormLabel htmlFor="transactionMemo">
+                    Transaction Memo
+                  </FormLabel>
                   <Input
+                    id="transactionMemo"
                     name="transactionMemo"
                     placeholder=""
                     size="lg"
