@@ -38,34 +38,30 @@ jest.mock('react-query', () => ({
   useQueryClient: jest.fn(),
 }))
 
-// Mock the CreateDeployment form components
 const mockProps = {
   onClose: jest.fn(),
   isOpen: true,
-  onSuccess: jest.fn(),
-  onFailure: jest.fn(),
   deployments: [],
   activeDeploymentUuid: '',
   setDeployments: jest.fn(),
-  setActiveDeploymentUuid: jest.fn(),
   isRedeploying: false,
   setIsRedeploying: jest.fn(),
 }
 
 const queryClient = new QueryClient()
 
-test('renders CreateDeployment', async () => {
-  // const { getByLabelText } = render(
-  const { findByLabelText } = render(
+test('renders CreateDeployment', () => {
+  const { getByLabelText, getByText } = render(
     <QueryClientProvider client={queryClient}>
       <CreateDeployment {...mockProps} />
     </QueryClientProvider>,
   )
-  const siteNameInput = await findByLabelText(/Site Name/)
-  const siteDescriptionInput = await findByLabelText(/Site Description/)
-  const transactionMemoInput = await findByLabelText(/Transaction Memo/)
 
-  expect(siteNameInput).toBeInTheDocument()
-  expect(siteDescriptionInput).toBeInTheDocument()
-  expect(transactionMemoInput).toBeInTheDocument()
+  expect(getByLabelText(/Site Name/)).toBeInTheDocument()
+  expect(getByLabelText(/Site Description/)).toBeInTheDocument()
+  expect(getByLabelText(/Transaction Memo/)).toBeInTheDocument()
+  expect(getByText('Save')).toBeInTheDocument()
+  expect(
+    getByText('Drag a zip file here, or click to select a file'),
+  ).toBeInTheDocument()
 })

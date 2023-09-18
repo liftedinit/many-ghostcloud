@@ -118,9 +118,6 @@ export default function CreateDeployment({
   const findActiveDeployment = () =>
     deployments.find(deployment => deployment.uuid === activeDeploymentUuid)
 
-  const createDeploymentMutation = useCreateDeployment()
-  const updateDeploymentMutation = useUpdateDeployment()
-
   const handleInputChange = useCallback(
     (event: React.FormEvent) => {
       const { name, value } = event.target as HTMLInputElement
@@ -149,12 +146,9 @@ export default function CreateDeployment({
 
   const handleMutation = async (
     data: WebDeployParams,
-    isRedeploying: boolean,
-    mutations: { create: any; update: any },
+    mutation: any,
     callbacks: { onSuccess: any; onError: any },
   ) => {
-    const mutation = isRedeploying ? mutations.update : mutations.create
-
     mutation.mutate(data, {
       onSuccess: callbacks.onSuccess,
       onError: callbacks.onError,
@@ -217,8 +211,7 @@ export default function CreateDeployment({
 
       await handleMutation(
         deploymentData,
-        isRedeploying,
-        { create: createDeploymentMutation, update: updateDeploymentMutation },
+        isRedeploying ? useUpdateDeployment : useCreateDeployment,
         {
           onSuccess: handleSuccess,
           onError: handleError,
