@@ -19,7 +19,7 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 import { useToast } from '@liftedinit/ui'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { BiCheck, BiSolidCloudUpload } from 'react-icons/bi'
 import { IoWarning } from 'react-icons/io5'
@@ -41,19 +41,22 @@ import {
 import { useAccountsStore } from '../features/accounts'
 
 const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backend, including the envelope and header overhead
+const SITE_NAME_MAX_LENGTH = 50
+const SITE_DESCRIPTION_MAX_LENGTH = 500
+const TRANSACTION_MEMO_MAX_LENGTH = 500
 
 interface FormState {
   siteName: string
   siteDescription?: string
   zipFile: File | undefined
-  transactionMemo?: string[]
+  transactionMemo?: string
 }
 
 const initialFormState = {
   siteName: '',
   siteDescription: '',
   zipFile: undefined,
-  transactionMemo: undefined,
+  transactionMemo: '', // Must be a controlled element
 }
 
 type CreateDeploymentProps = {
@@ -66,7 +69,21 @@ type CreateDeploymentProps = {
   setIsRedeploying: (value: boolean) => void
 }
 
-export default function CreateDeployment(props: CreateDeploymentProps) {
+type Lengths = {
+  siteName: number
+  siteDescription: number
+  transactionMemo: number
+}
+
+export default function CreateDeployment({
+  onClose,
+  isOpen,
+  deployments,
+  activeDeploymentUuid,
+  setDeployments,
+  isRedeploying,
+  setIsRedeploying,
+}: CreateDeploymentProps) {
   const theme = useTheme()
   const toast = useToast()
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
@@ -88,48 +105,47 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [siteNameLength, setSiteNameLength] = useState(0)
-  const [siteDescriptionLength, setSiteDescriptionLength] = useState(0)
-  const [transactionMemoLength, setTransactionMemoLength] = useState(0)
-  const isValid = !formState.zipFile || !formState.siteName.length
-
+  const isDisabled = !formState.zipFile || !formState.siteName.length
+  const [lengths, setLengths] = useState<Lengths>({
+    siteName: 0,
+    siteDescription: 0,
+    transactionMemo: 0,
+  })
   const account = useAccountsStore(s => s.byId.get(s.activeId))
 
   const remainingChars = (currentLength: number, maxLength: number) =>
     `${currentLength}/${maxLength}`
+  const findActiveDeployment = () =>
+    deployments.find(deployment => deployment.uuid === activeDeploymentUuid)
 
   const createDeploymentMutation = useCreateDeployment()
   const updateDeploymentMutation = useUpdateDeployment()
 
-  const handleInputChange = (event: React.FormEvent) => {
-    const { name, value } = event.target as HTMLInputElement
-    if (name === 'siteName') setSiteNameLength(value.length)
-    if (name === 'siteDescription') setSiteDescriptionLength(value.length)
-    if (name === 'transactionMemo') setTransactionMemoLength(value.length)
-
-    setFormState({
-      ...formState,
-      [name]: value,
-    })
-  }
+  const handleInputChange = useCallback(
+    (event: React.FormEvent) => {
+      const { name, value } = event.target as HTMLInputElement
+      if (Object.keys(lengths).includes(name)) {
+        setLengths(prev => ({ ...prev, [name]: value.length }))
+        setFormState(prev => ({ ...prev, [name]: value }))
+      }
+    },
+    [lengths],
+  )
 
   useEffect(() => {
-    if (!props.isOpen) return
+    if (!isOpen) return
 
-    const foundDeployment = props.deployments.find(
-      (deployment: any) => deployment.uuid === props.activeDeploymentUuid,
-    )
-
+    const foundDeployment = findActiveDeployment()
     if (foundDeployment) {
-      setFormState({
-        ...formState,
+      setFormState(prevState => ({
+        ...prevState,
         siteName: foundDeployment.siteName,
         siteDescription: foundDeployment.siteDescription,
         transactionMemo: foundDeployment.transactionMemo,
         zipFile: undefined,
-      })
+      }))
     }
-  }, [props.isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMutation = async (
     data: WebDeployParams,
@@ -145,6 +161,35 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
     })
   }
 
+  const handleSuccess = useCallback(
+    (returnedData: WebDeployInfo) => {
+      handleDeploymentCreationSuccess(setError, {
+        returnedData,
+        deployments,
+        activeDeploymentUuid,
+        setDeployments,
+        setIsSubmitting,
+        setIsComplete,
+        setIsRedeploying,
+      })
+    },
+    [deployments, activeDeploymentUuid, setDeployments, setIsRedeploying],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      setIsSubmitting(false)
+      setError(error)
+      toast({
+        title: 'Error',
+        description: error.message,
+        status: 'error',
+      })
+      setIsRedeploying(false)
+    },
+    [setIsRedeploying, toast],
+  )
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setIsSubmitting(true)
@@ -159,9 +204,6 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
         return
       }
       const payload: Archive = [0, new Map().set(0, arrayBuffer)]
-      const memo = formState.transactionMemo
-        ? [formState.transactionMemo.toString()]
-        : ['']
       const deploymentData = {
         owner: account?.address,
         siteName: formState.siteName,
@@ -170,34 +212,16 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
           type: DeploymentTypes.Archive,
           payload,
         } as DeploymentSource,
-        memo,
+        memo: formState.transactionMemo ? [formState.transactionMemo] : [''],
       }
 
       await handleMutation(
         deploymentData,
-        props.isRedeploying,
+        isRedeploying,
         { create: createDeploymentMutation, update: updateDeploymentMutation },
         {
-          onSuccess: (returnedData: WebDeployInfo) =>
-            handleDeploymentCreationSuccess(setError, {
-              returnedData,
-              deployments: props.deployments,
-              activeDeploymentUuid: props.activeDeploymentUuid,
-              setDeployments: props.setDeployments,
-              setIsSubmitting,
-              setIsComplete,
-              setIsRedeploying: props.setIsRedeploying,
-            }),
-          onError: (error: Error) => {
-            setIsSubmitting(false)
-            setError(error as Error)
-            toast({
-              title: 'Error',
-              description: (error as Error).message,
-              status: 'error',
-            })
-            props.setIsRedeploying(false)
-          },
+          onSuccess: handleSuccess,
+          onError: handleError,
         },
       )
     }
@@ -208,14 +232,14 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
   })
 
   const handleClose = () => {
-    props.onClose()
+    onClose()
     setIsComplete(false)
     setError(null)
     setFormState(initialFormState)
   }
 
   return (
-    <Modal isOpen={props.isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Create Deployment</ModalHeader>
@@ -279,10 +303,10 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     value={formState.siteName}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
-                    maxLength={50}
+                    maxLength={SITE_NAME_MAX_LENGTH}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    {remainingChars(siteNameLength, 50)}
+                    {remainingChars(lengths.siteName, 50)}
                   </Text>
                 </FormControl>
 
@@ -295,10 +319,10 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     value={formState.siteDescription}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
-                    maxLength={500}
+                    maxLength={SITE_DESCRIPTION_MAX_LENGTH}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    {remainingChars(siteDescriptionLength, 500)}
+                    {remainingChars(lengths.siteDescription, 500)}
                   </Text>
                 </FormControl>
 
@@ -308,13 +332,13 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                     name="transactionMemo"
                     placeholder=""
                     size="lg"
-                    value={formState.transactionMemo}
+                    value={formState.transactionMemo ?? ['']}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
-                    maxLength={500}
+                    maxLength={TRANSACTION_MEMO_MAX_LENGTH}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    {remainingChars(transactionMemoLength, 500)}
+                    {remainingChars(lengths.transactionMemo, 500)}
                   </Text>
                 </FormControl>
 
@@ -398,7 +422,7 @@ export default function CreateDeployment(props: CreateDeploymentProps) {
                 <Button
                   type="submit"
                   isLoading={isSubmitting}
-                  disabled={isValid}
+                  disabled={isDisabled}
                   px={10}
                 >
                   Save
