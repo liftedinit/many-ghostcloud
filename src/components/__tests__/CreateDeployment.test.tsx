@@ -57,6 +57,7 @@ test('renders CreateDeployment', () => {
     </QueryClientProvider>,
   )
 
+  expect(getByLabelText(/Site Name/)).toBeInTheDocument()
   expect(getByLabelText(/Site Description/)).toBeInTheDocument()
   expect(getByLabelText(/Transaction Memo/)).toBeInTheDocument()
   expect(getByText('Save')).toBeInTheDocument()

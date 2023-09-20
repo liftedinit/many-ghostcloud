@@ -38,7 +38,7 @@ const mockProps = {
 const queryClient = new QueryClient()
 
 test('renders DeploymentsList', () => {
-  const { getByText } = render(
+  const { getByText, getByLabelText } = render(
     <QueryClientProvider client={queryClient}>
       <DeploymentsList {...mockProps} />
     </QueryClientProvider>,
@@ -50,6 +50,6 @@ test('renders DeploymentsList', () => {
   expect(getByText('Name')).toBeInTheDocument()
   expect(getByText('Description')).toBeInTheDocument()
   expect(getByText('URL')).toBeInTheDocument()
-  expect(getByText('Redeploy')).toBeInTheDocument()
-  expect(getByText('Delete')).toBeInTheDocument()
+  expect(getByLabelText(/Redeploy/)).toBeInTheDocument()
+  expect(getByLabelText(/Delete/)).toBeInTheDocument()
 })
