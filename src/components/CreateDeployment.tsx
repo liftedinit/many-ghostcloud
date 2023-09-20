@@ -112,6 +112,8 @@ export default function CreateDeployment({
     transactionMemo: 0,
   })
   const account = useAccountsStore(s => s.byId.get(s.activeId))
+  const createDeploymentMutation = useCreateDeployment()
+  const updateDeploymentMutation = useUpdateDeployment()
 
   const remainingChars = (currentLength: number, maxLength: number) =>
     `${currentLength}/${maxLength}`
@@ -146,9 +148,12 @@ export default function CreateDeployment({
 
   const handleMutation = async (
     data: WebDeployParams,
-    mutation: any,
+    isRedeploying: boolean,
+    mutations: { create: any; update: any },
     callbacks: { onSuccess: any; onError: any },
   ) => {
+    const mutation = isRedeploying ? mutations.update : mutations.create
+
     mutation.mutate(data, {
       onSuccess: callbacks.onSuccess,
       onError: callbacks.onError,
@@ -211,7 +216,8 @@ export default function CreateDeployment({
 
       await handleMutation(
         deploymentData,
-        isRedeploying ? useUpdateDeployment : useCreateDeployment,
+        isRedeploying,
+        { create: createDeploymentMutation, update: updateDeploymentMutation },
         {
           onSuccess: handleSuccess,
           onError: handleError,
