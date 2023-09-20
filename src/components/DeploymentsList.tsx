@@ -12,6 +12,15 @@ import {
 } from '@chakra-ui/react'
 import { DeleteIcon, EditIcon } from '@liftedinit/ui'
 
+const formatUrlDisplay = (url: string) => {
+  if (url.length <= 34) {
+    return url // return the original string if it's 34 characters or less
+  }
+  const start = url.slice(0, 17)
+  const end = url.slice(-21)
+  return `${start}...${end}`
+}
+
 const Td = (props: any) => {
   const { label, value } = props
   const theme = useTheme()
@@ -63,7 +72,9 @@ const Td = (props: any) => {
             }}
           >
             {label === 'URL' ? (
-              <Link href={value}>{value.replace('https://', '')}</Link>
+              <Link href={value}>
+                {formatUrlDisplay(value.replace('https://', ''))}
+              </Link>
             ) : (
               <>{value}</>
             )}
@@ -81,7 +92,7 @@ export default function DeploymentsList(props: any) {
 
   return (
     <Grid
-      templateColumns={`repeat(${isMobile ? 1 : 4}, 1fr)`}
+      templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr'}
       gap={0}
       mt={4}
       mb={40}
