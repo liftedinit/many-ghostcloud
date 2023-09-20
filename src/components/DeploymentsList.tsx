@@ -3,13 +3,14 @@ import {
   Box,
   Grid,
   GridItem,
-  Button,
+  IconButton,
   Text,
   Link,
   Tooltip,
   useTheme,
   useMediaQuery,
 } from '@chakra-ui/react'
+import { DeleteIcon, EditIcon } from '@liftedinit/ui'
 
 const Td = (props: any) => {
   const { label, value } = props
@@ -133,21 +134,23 @@ export default function DeploymentsList(props: any) {
               alignItems="center"
               justifyContent={isMobile ? 'flex-start' : 'flex-end'}
             >
-              <Button
+              <IconButton
                 onClick={() => onEdit(uuid)}
+                aria-label="Redeploy"
+                icon={<EditIcon />}
                 size="sm"
                 fontWeight="normal"
                 mr={3}
-              >
-                Redeploy
-              </Button>
-              <Button
+              />
+              <IconButton
                 onClick={() => onDelete(uuid)}
+                aria-label="Delete"
+                icon={<DeleteIcon />}
                 size="sm"
                 fontWeight="normal"
               >
                 Delete
-              </Button>
+              </IconButton>
             </GridItem>
           </Fragment>
         )

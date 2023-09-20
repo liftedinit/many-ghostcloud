@@ -54,7 +54,7 @@ interface FormState {
 }
 
 const initialFormState = {
-  siteName: '',
+  siteName: generateRandomString(12),
   siteDescription: '',
   zipFile: undefined,
   transactionMemo: '', // Must be a controlled element
@@ -206,7 +206,7 @@ export default function CreateDeployment({
       const payload: Archive = [0, new Map().set(0, arrayBuffer)]
       const deploymentData = {
         owner: account?.address,
-        siteName: generateRandomString(SITE_NAME_MAX_LENGTH),
+        siteName: formState.siteName,
         siteDescription: formState.siteDescription,
         deploymentSource: {
           type: DeploymentTypes.Archive,
@@ -235,7 +235,7 @@ export default function CreateDeployment({
     onClose()
     setIsComplete(false)
     setError(null)
-    setFormState(initialFormState)
+    setFormState({ ...initialFormState, siteName: generateRandomString(12) })
   }
 
   return (
@@ -294,6 +294,20 @@ export default function CreateDeployment({
           ) : (
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
+                <FormControl isRequired>
+                  <FormLabel htmlFor="siteName">Site Name</FormLabel>
+                  <Input
+                    id="siteName"
+                    name="siteName"
+                    placeholder=""
+                    size="lg"
+                    value={formState.siteName}
+                    onChange={handleInputChange}
+                    borderColor={theme.colors.gray[400]}
+                    maxLength={SITE_NAME_MAX_LENGTH}
+                    disabled={true}
+                  />
+                </FormControl>
                 <FormControl isRequired>
                   <FormLabel htmlFor="siteDescription">
                     Site Description
