@@ -39,9 +39,10 @@ import {
   WebDeployParams,
 } from '@liftedinit/many-js'
 import { useAccountsStore } from '../features/accounts'
+import { generateRandomString } from '../shared'
 
 const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backend, including the envelope and header overhead
-const SITE_NAME_MAX_LENGTH = 50
+const SITE_NAME_MAX_LENGTH = 12
 const SITE_DESCRIPTION_MAX_LENGTH = 500
 const TRANSACTION_MEMO_MAX_LENGTH = 500
 
@@ -105,7 +106,7 @@ export default function CreateDeployment({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const isDisabled = !formState.zipFile || !formState.siteName.length
+  const isDisabled = !formState.zipFile || !formState.siteDescription?.length
   const [lengths, setLengths] = useState<Lengths>({
     siteName: 0,
     siteDescription: 0,
@@ -205,7 +206,7 @@ export default function CreateDeployment({
       const payload: Archive = [0, new Map().set(0, arrayBuffer)]
       const deploymentData = {
         owner: account?.address,
-        siteName: formState.siteName,
+        siteName: generateRandomString(SITE_NAME_MAX_LENGTH),
         siteDescription: formState.siteDescription,
         deploymentSource: {
           type: DeploymentTypes.Archive,
@@ -294,23 +295,6 @@ export default function CreateDeployment({
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
                 <FormControl isRequired>
-                  <FormLabel htmlFor="siteName">Site Name</FormLabel>
-                  <Input
-                    id="siteName"
-                    name="siteName"
-                    placeholder=""
-                    size="lg"
-                    value={formState.siteName}
-                    onChange={handleInputChange}
-                    borderColor={theme.colors.gray[400]}
-                    maxLength={SITE_NAME_MAX_LENGTH}
-                  />
-                  <Text fontSize="sm" color="gray.500">
-                    {remainingChars(lengths.siteName, 50)}
-                  </Text>
-                </FormControl>
-
-                <FormControl>
                   <FormLabel htmlFor="siteDescription">
                     Site Description
                   </FormLabel>
