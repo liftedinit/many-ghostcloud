@@ -42,7 +42,7 @@ const Td = (props: any) => {
           <Text>
             {label === 'URL' ? (
               <Link
-                href={value}
+                href={`${value}/index.html`}
                 sx={{
                   display: 'block',
                   whiteSpace: 'nowrap',
@@ -72,7 +72,7 @@ const Td = (props: any) => {
             }}
           >
             {label === 'URL' ? (
-              <Link href={value}>
+              <Link href={`${value}/index.html`}>
                 {formatUrlDisplay(value.replace('https://', ''))}
               </Link>
             ) : (
