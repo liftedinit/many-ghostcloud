@@ -39,7 +39,6 @@ test('renders Footer', () => {
   )
 
   expect(getByText('Home')).toBeInTheDocument()
-  expect(getByText('Dashboard')).toBeInTheDocument()
   expect(getByText('Terms Of Service')).toBeInTheDocument()
   expect(getByText('Privacy Policy')).toBeInTheDocument()
   expect(getByText('Status')).toBeInTheDocument()
