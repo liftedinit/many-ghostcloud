@@ -38,7 +38,7 @@ export function SeedWords({ setAddMethod, onSuccess }: AddAccountMethodProps) {
         description: 'Invalid mnemonic',
       })
     }
-    const address = (await identity.getAddress()).toString()
+    const address = await identity.getAddress()
     const exists = await doesAccountExist(address, accounts)
     if (exists) {
       return toast({

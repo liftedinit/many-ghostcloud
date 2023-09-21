@@ -16,6 +16,10 @@ import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
+import {
+  useDeploymentList,
+  WebDeployInfoWithUuid,
+} from '../../features/deployments'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -32,27 +36,20 @@ export function Dashboard() {
   } = useDisclosure()
 
   const [isMobile] = useMediaQuery('(max-width: 640px)')
-  const [deployments, setDeployments] = useState([
-    {
-      uuid: 'de35cecd-4be7-4d7c-ae53-87da0dabdc80',
-      siteName: 'this site name is rather long and stuff',
-      siteDescription:
-        'Curabitur id leo eu erat pretium consequat. Nulla metus tortor, dignissim et massa vel, faucibus consectetur turpis.',
-      siteUrl:
-        'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
-      transactionMemo: '',
-    },
-    {
-      uuid: '2ed2cdd7-33a7-4dbe-a45d-8d456d84e178',
-      siteName: 'abcdef',
-      siteDescription:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-      siteUrl:
-        'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
-      transactionMemo: 'Duis auctor mauris eget sapien dignissim consectetur',
-    },
-  ])
+  const [deployments, setDeployments] = useState<WebDeployInfoWithUuid[]>([])
   const [activeDeploymentUuid, setActiveDeploymentUuid] = useState('')
+  const [isRedeploying, setIsRedeploying] = useState(false)
+
+  // TODO: Handle error
+  const { data: allDeployments } = useDeploymentList({
+    address: account?.address,
+  })
+
+  useEffect(() => {
+    if (allDeployments) {
+      setDeployments(allDeployments)
+    }
+  }, [allDeployments])
 
   const handleDeleteDeployment = (uuid: string) => {
     setActiveDeploymentUuid(uuid)
@@ -61,6 +58,7 @@ export function Dashboard() {
 
   const handleEditDeployment = (uuid: string) => {
     setActiveDeploymentUuid(uuid)
+    setIsRedeploying(true)
     createDeploymentOnOpen()
   }
   const navigate = useNavigate()
@@ -117,6 +115,8 @@ export function Dashboard() {
         deployments={deployments}
         activeDeploymentUuid={activeDeploymentUuid}
         setDeployments={setDeployments}
+	isRedeploying={isRedeploying}
+	setIsRedeploying={setIsRedeploying}
       />
       <ConfirmDelete
         isOpen={confirmDeleteIsOpen}

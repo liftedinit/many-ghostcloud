@@ -2,10 +2,11 @@ import create from 'zustand'
 import { persist } from 'zustand/middleware'
 import localforage from 'localforage'
 import { replacer, reviver } from 'shared'
+import { Address } from '@liftedinit/many-js'
 
 interface Actions {
-  update: (address: string, a: Record<string, unknown>) => void
-  delete: (address: string) => void
+  update: (address: Address, a: Record<string, unknown>) => void
+  delete: (address: Address) => void
 }
 
 const initialState: { byId: Map<string, Record<string, unknown>> } = {
@@ -18,17 +19,17 @@ export const useAccountStore = create<
   persist(
     set => ({
       ...initialState,
-      update: (address: string, account: Record<string, unknown>) =>
+      update: (address: Address, account: Record<string, unknown>) =>
         set(s => ({
-          byId: new Map(s.byId).set(address, {
-            ...s.byId.get(address),
+          byId: new Map(s.byId).set(address.toString(), {
+            ...s.byId.get(address.toString()),
             ...account,
           }),
         })),
-      delete: (address: string) => {
+      delete: (address: Address) => {
         set(s => {
           const byId = new Map(s.byId)
-          byId.delete(address)
+          byId.delete(address.toString())
           return {
             byId,
           }

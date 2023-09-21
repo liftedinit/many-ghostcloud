@@ -18,25 +18,62 @@ import {
   Heading,
   Textarea,
 } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useToast } from '@liftedinit/ui'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { BiCheck, BiSolidCloudUpload } from 'react-icons/bi'
 import { IoWarning } from 'react-icons/io5'
 import { FaExclamation } from 'react-icons/fa'
-import { v4 as uuidv4 } from 'uuid'
+import {
+  Deployment,
+  fileToArrayBuffer,
+  handleDeploymentCreationSuccess,
+  useCreateDeployment,
+  useUpdateDeployment,
+} from '../features/deployments'
+import {
+  DeploymentTypes,
+  DeploymentSource,
+  Archive,
+  WebDeployInfo,
+  WebDeployParams,
+} from '@liftedinit/many-js'
+import { useAccountsStore } from '../features/accounts'
+import { generateRandomString } from '../shared'
+
+const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backend, including the envelope and header overhead
+const SITE_NAME_MAX_LENGTH = 12
+const SITE_DESCRIPTION_MAX_LENGTH = 500
+const TRANSACTION_MEMO_MAX_LENGTH = 500
 
 interface FormState {
   siteName: string
-  siteDescription: string
+  siteDescription?: string
   zipFile: File | undefined
-  transactionMemo: string
+  transactionMemo?: string
 }
 
-const defaultState = {
-  siteName: '',
+const initialFormState = {
+  siteName: generateRandomString(12),
   siteDescription: '',
   zipFile: undefined,
-  transactionMemo: '',
+  transactionMemo: '', // Must be a controlled element
+}
+
+type CreateDeploymentProps = {
+  onClose: () => void
+  isOpen: boolean
+  deployments: Deployment[]
+  activeDeploymentUuid: string
+  setDeployments: (deployments: Deployment[]) => void
+  isRedeploying: boolean
+  setIsRedeploying: (value: boolean) => void
+}
+
+type Lengths = {
+  siteName: number
+  siteDescription: number
+  transactionMemo: number
 }
 
 export default function CreateDeployment({
@@ -45,122 +82,149 @@ export default function CreateDeployment({
   deployments,
   activeDeploymentUuid,
   setDeployments,
-}: {
-  onClose: () => void
-  isOpen: boolean
-  deployments: any
-  activeDeploymentUuid: any
-  setDeployments: any
-}) {
+  isRedeploying,
+  setIsRedeploying,
+}: CreateDeploymentProps) {
   const theme = useTheme()
+  const toast = useToast()
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
     useDropzone({
       accept: {
         'application/zip': [],
       },
       maxFiles: 1,
-      maxSize: 5242880,
+      maxSize: MAX_FILE_SIZE_BYTES,
       onDrop: files => {
+        setError(null)
         setFormState({
           ...formState,
           zipFile: files[0],
         })
       },
     })
-  const [formState, setFormState] = useState<FormState>(defaultState)
+  const [formState, setFormState] = useState<FormState>(initialFormState)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
-  const [isRedeploying, setIsRedeploying] = useState(false)
-  const [error, setError] = useState(false)
-  const isValid = !formState.zipFile || !formState.siteName.length
+  const [error, setError] = useState<Error | null>(null)
+  const isDisabled = !formState.zipFile || !formState.siteDescription?.length
+  const [lengths, setLengths] = useState<Lengths>({
+    siteName: 0,
+    siteDescription: 0,
+    transactionMemo: 0,
+  })
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+  const createDeploymentMutation = useCreateDeployment()
+  const updateDeploymentMutation = useUpdateDeployment()
 
-  const handleInputChange = (event: React.FormEvent) => {
-    const { name, value } = event.target as HTMLInputElement
-    setFormState({
-      ...formState,
-      [name]: value,
-    })
-  }
+  const remainingChars = (currentLength: number, maxLength: number) =>
+    `${currentLength}/${maxLength}`
+  const findActiveDeployment = () =>
+    deployments.find(deployment => deployment.uuid === activeDeploymentUuid)
+
+  const handleInputChange = useCallback(
+    (event: React.FormEvent) => {
+      const { name, value } = event.target as HTMLInputElement
+      if (Object.keys(lengths).includes(name)) {
+        setLengths(prev => ({ ...prev, [name]: value.length }))
+        setFormState(prev => ({ ...prev, [name]: value }))
+      }
+    },
+    [lengths],
+  )
 
   useEffect(() => {
     if (!isOpen) return
 
-    const foundDeployment = deployments.find(
-      (deployment: any) => deployment.uuid === activeDeploymentUuid,
-    )
-
+    const foundDeployment = findActiveDeployment()
     if (foundDeployment) {
-      setFormState({
-        ...formState,
+      setFormState(prevState => ({
+        ...prevState,
         siteName: foundDeployment.siteName,
         siteDescription: foundDeployment.siteDescription,
         transactionMemo: foundDeployment.transactionMemo,
         zipFile: undefined,
-      })
-      setIsRedeploying(true)
+      }))
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleMutation = async (
+    data: WebDeployParams,
+    isRedeploying: boolean,
+    mutations: { create: any; update: any },
+    callbacks: { onSuccess: any; onError: any },
+  ) => {
+    const mutation = isRedeploying ? mutations.update : mutations.create
+
+    mutation.mutate(data, {
+      onSuccess: callbacks.onSuccess,
+      onError: callbacks.onError,
+    })
+  }
+
+  const handleSuccess = useCallback(
+    (returnedData: WebDeployInfo) => {
+      handleDeploymentCreationSuccess(setError, {
+        returnedData,
+        deployments,
+        activeDeploymentUuid,
+        setDeployments,
+        setIsSubmitting,
+        setIsComplete,
+        setIsRedeploying,
+      })
+    },
+    [deployments, activeDeploymentUuid, setDeployments, setIsRedeploying],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      setIsSubmitting(false)
+      setError(error)
+      toast({
+        title: 'Error',
+        description: error.message,
+        status: 'error',
+      })
+      setIsRedeploying(false)
+    },
+    [setIsRedeploying, toast],
+  )
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setIsSubmitting(true)
 
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsComplete(true)
-
-      let deploymentsClone = structuredClone(deployments)
-
-      let deployment = {
-        uuid: uuidv4(),
+    if (formState.zipFile) {
+      let arrayBuffer: ArrayBuffer
+      try {
+        arrayBuffer = await fileToArrayBuffer(formState.zipFile)
+      } catch (error) {
+        setIsSubmitting(false)
+        setError(error as Error)
+        return
+      }
+      const payload: Archive = [0, new Map().set(0, arrayBuffer)]
+      const deploymentData = {
+        owner: account?.address,
         siteName: formState.siteName,
         siteDescription: formState.siteDescription,
-        siteUrl:
-          'https://my_super_website.mae3b6s3erledkb752cxxf52o4mw6gipupeaqpd63wdpv5narj.ghostcloud.org',
-        transactionMemo: formState.transactionMemo,
+        deploymentSource: {
+          type: DeploymentTypes.Archive,
+          payload,
+        } as DeploymentSource,
+        memo: formState.transactionMemo ? [formState.transactionMemo] : [''],
       }
 
-      if (isRedeploying) {
-        deploymentsClone = deploymentsClone.filter(
-          (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-        )
-        deployment.uuid = activeDeploymentUuid
-      }
-
-      setDeployments([...deploymentsClone, deployment])
-    }, 1000)
-
-    // const formData = new FormData()
-    // formData.append('siteName', formState.siteName)
-    // formData.append('siteDescription', formState.siteDescription)
-    // formData.append('transactionMemo', formState.transactionMemo)
-    // if (formState.zipFile) {
-    //   formData.append('file', formState.zipFile, formState.zipFile.name)
-    // }
-    // fetch('http://server.com/api/upload', {
-    //   method: 'POST',
-    //   body: formData,
-    // })
-    //   .then(response => response.json())
-    //   .then(json => {
-    //     setDeployments([
-    //       ...deployments,
-    //       {
-    //         uuid: json.uuid,
-    //         siteName: formState.siteName,
-    //         siteUrl: json.url,
-    //         siteDescription: formState.siteDescription,
-    //         transactionMemo: formState.transactionMemo,
-    //       },
-    //     ])
-    //     setIsSubmitting(false)
-    //     setIsComplete(true)
-    //   })
-    //   .catch(() => {
-    //     setIsSubmitting(false)
-    //     setIsComplete(true)
-    //     setError(true)
-    //   })
+      await handleMutation(
+        deploymentData,
+        isRedeploying,
+        { create: createDeploymentMutation, update: updateDeploymentMutation },
+        {
+          onSuccess: handleSuccess,
+          onError: handleError,
+        },
+      )
+    }
   }
 
   const acceptedFileItems = acceptedFiles.map(file => {
@@ -170,8 +234,9 @@ export default function CreateDeployment({
   const handleClose = () => {
     onClose()
     setIsComplete(false)
-    setError(false)
-    setFormState(defaultState)
+    setError(null)
+    setFormState({ ...initialFormState, siteName: generateRandomString(12) })
+    setIsRedeploying(false)
   }
 
   return (
@@ -231,39 +296,55 @@ export default function CreateDeployment({
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
                 <FormControl isRequired>
-                  <FormLabel>Site Name</FormLabel>
+                  <FormLabel htmlFor="siteName">Site Name</FormLabel>
                   <Input
+                    id="siteName"
                     name="siteName"
                     placeholder=""
                     size="lg"
                     value={formState.siteName}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={SITE_NAME_MAX_LENGTH}
+                    disabled={true}
                   />
                 </FormControl>
-
-                <FormControl>
-                  <FormLabel>Site Description</FormLabel>
+                <FormControl isRequired>
+                  <FormLabel htmlFor="siteDescription">
+                    Site Description
+                  </FormLabel>
                   <Textarea
+                    id="siteDescription"
                     name="siteDescription"
                     placeholder=""
                     size="lg"
                     value={formState.siteDescription}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={SITE_DESCRIPTION_MAX_LENGTH}
                   />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(lengths.siteDescription, 500)}
+                  </Text>
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Transaction Memo</FormLabel>
+                  <FormLabel htmlFor="transactionMemo">
+                    Transaction Memo
+                  </FormLabel>
                   <Input
+                    id="transactionMemo"
                     name="transactionMemo"
                     placeholder=""
                     size="lg"
-                    value={formState.transactionMemo}
+                    value={formState.transactionMemo ?? ['']}
                     onChange={handleInputChange}
                     borderColor={theme.colors.gray[400]}
+                    maxLength={TRANSACTION_MEMO_MAX_LENGTH}
                   />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(lengths.transactionMemo, 500)}
+                  </Text>
                 </FormControl>
 
                 <Box
@@ -319,24 +400,23 @@ export default function CreateDeployment({
                     {acceptedFileItems}
                   </Text>
                 ) : null}
-                {fileRejections.length ? (
-                  <Text
-                    display="flex"
-                    mt={4}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Icon
-                      as={IoWarning}
-                      w={6}
-                      h={6}
-                      mr={2}
-                      color={theme.colors.red[600]}
-                    />
-                    Please only select one zip file that is less than 5MB in
-                    size.
-                  </Text>
-                ) : null}
+                {fileRejections.length > 0 && (
+                  <Box mt={4}>
+                    {fileRejections.map(rejection => (
+                      <Box
+                        key={rejection.file.name}
+                        color={theme.colors.red[600]}
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Icon as={IoWarning} w={6} h={6} mr={2} />
+                        {rejection.errors.map(error => (
+                          <Text key={error.code}>{error.message} </Text>
+                        ))}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
               </Stack>
               <Box
                 display="flex"
@@ -347,7 +427,7 @@ export default function CreateDeployment({
                 <Button
                   type="submit"
                   isLoading={isSubmitting}
-                  disabled={isValid}
+                  disabled={isDisabled}
                   px={10}
                 >
                   Save

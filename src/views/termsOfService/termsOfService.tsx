@@ -79,7 +79,9 @@ export function TermsOfService() {
         <Text>
           If you have any questions or concerns about these Terms, please
           contact us at" "
-          <Link href="mailto:info@ghostcloud.com">info@ghostcloud.com</Link>
+          <Link href="mailto:ghostcloud@liftedinit.org">
+            ghostcloud@liftedinit.org
+          </Link>
         </Text>
       </Box>
     </Container>

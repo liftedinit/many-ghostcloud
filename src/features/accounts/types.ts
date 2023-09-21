@@ -2,12 +2,13 @@ import {
   WebAuthnIdentity,
   Ed25519KeyPairIdentity,
   AnonymousIdentity,
+  Address,
 } from '@liftedinit/many-js'
 
 export type AccountId = number
 export interface Account {
   name: string
-  address: string
+  address: Address
   identity: WebAuthnIdentity | Ed25519KeyPairIdentity | AnonymousIdentity
 }
 
@@ -19,7 +20,7 @@ export interface AccountsState {
 
 export type Credential = {
   base64Id: string
-  address: string
+  address: Address
 }
 
 export enum RecoverOptions {

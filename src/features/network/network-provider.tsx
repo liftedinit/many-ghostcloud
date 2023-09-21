@@ -1,12 +1,11 @@
 import React from 'react'
 import {
   Network,
-  Ledger,
   AnonymousIdentity,
-  IdStore,
   Account,
   Base,
   Events,
+  Web,
 } from '@liftedinit/many-js'
 import { useNetworkStore } from './store'
 import { useAccountsStore } from 'features/accounts'
@@ -29,9 +28,9 @@ export function NetworkProvider({ children }: React.PropsWithChildren<{}>) {
     const identity = activeAccount?.identity ?? anonIdentity
     const url = activeNetwork?.url || ''
     const queryNetwork = new Network(url, anonIdentity)
-    queryNetwork.apply([Ledger, IdStore, Account, Events, Base])
+    queryNetwork.apply([Web, Events, Base])
     const cmdNetwork = new Network(url, identity)
-    cmdNetwork.apply([Ledger, IdStore, Account])
+    cmdNetwork.apply([Web])
     const eventNetworks =
       activeNetwork?.name.toLowerCase() === 'manifest ledger' // FIXME: Filtering by the network name is dumb. Improve me.
         ? legacyNetworks?.map(params => {

@@ -3,13 +3,23 @@ import {
   Box,
   Grid,
   GridItem,
-  Button,
+  IconButton,
   Text,
   Link,
   Tooltip,
   useTheme,
   useMediaQuery,
 } from '@chakra-ui/react'
+import { DeleteIcon, EditIcon } from '@liftedinit/ui'
+
+const formatUrlDisplay = (url: string) => {
+  if (url.length <= 34) {
+    return url // return the original string if it's 34 characters or less
+  }
+  const start = url.slice(0, 17)
+  const end = url.slice(-21)
+  return `${start}...${end}`
+}
 
 const Td = (props: any) => {
   const { label, value } = props
@@ -32,7 +42,7 @@ const Td = (props: any) => {
           <Text>
             {label === 'URL' ? (
               <Link
-                href={value}
+                href={`${value}/index.html`}
                 sx={{
                   display: 'block',
                   whiteSpace: 'nowrap',
@@ -51,7 +61,7 @@ const Td = (props: any) => {
       ) : (
         <Tooltip
           label={label === 'URL' ? value.replace('https://', '') : value}
-          aria-label="A tooltip"
+          aria-label="URL"
           openDelay={500}
         >
           <Text
@@ -62,7 +72,9 @@ const Td = (props: any) => {
             }}
           >
             {label === 'URL' ? (
-              <Link href={value}>{value.replace('https://', '')}</Link>
+              <Link href={`${value}/index.html`}>
+                {formatUrlDisplay(value.replace('https://', ''))}
+              </Link>
             ) : (
               <>{value}</>
             )}
@@ -80,7 +92,7 @@ export default function DeploymentsList(props: any) {
 
   return (
     <Grid
-      templateColumns={`repeat(${isMobile ? 1 : 4}, 1fr)`}
+      templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr'}
       gap={0}
       mt={4}
       mb={40}
@@ -118,12 +130,12 @@ export default function DeploymentsList(props: any) {
         display={isMobile ? 'none' : 'flex'}
       ></GridItem>
       {deployments.map((deployment: any) => {
-        const { uuid, siteName, siteDescription, siteUrl } = deployment
+        const { uuid, siteName, siteDescription, deploymentUrl } = deployment
         return (
           <Fragment key={uuid}>
             <Td label="Name" value={siteName} />
             <Td label="Description" value={siteDescription} />
-            <Td label="URL" value={siteUrl} />
+            <Td label="URL" value={deploymentUrl} />
 
             <GridItem
               colSpan={1}
@@ -133,21 +145,23 @@ export default function DeploymentsList(props: any) {
               alignItems="center"
               justifyContent={isMobile ? 'flex-start' : 'flex-end'}
             >
-              <Button
+              <IconButton
                 onClick={() => onEdit(uuid)}
+                aria-label="Redeploy"
+                icon={<EditIcon />}
                 size="sm"
                 fontWeight="normal"
                 mr={3}
-              >
-                Redeploy
-              </Button>
-              <Button
+              />
+              <IconButton
                 onClick={() => onDelete(uuid)}
+                aria-label="Delete"
+                icon={<DeleteIcon />}
                 size="sm"
                 fontWeight="normal"
               >
                 Delete
-              </Button>
+              </IconButton>
             </GridItem>
           </Fragment>
         )

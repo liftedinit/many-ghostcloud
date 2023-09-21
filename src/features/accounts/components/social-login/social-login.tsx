@@ -76,7 +76,7 @@ export function SocialLogin({ onSuccess }: { onSuccess: () => void }) {
       const identity = Ed25519KeyPairIdentity.fromHex(
         Buffer.from(privateKey, 'hex'),
       )
-      const address = (await identity.getAddress()).toString()
+      const address = await identity.getAddress()
 
       const accountExists = await doesAccountExist(address, accounts)
       if (accountExists) {

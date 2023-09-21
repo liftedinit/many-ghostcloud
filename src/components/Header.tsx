@@ -223,7 +223,7 @@ export default function Header({ onAddModalOpen }: any) {
                               setCopied(true)
                               setTimeout(() => setCopied(false), 1000)
                               navigator.clipboard.writeText(
-                                account?.address || '',
+                                account?.address.toString() || '',
                               )
                             }}
                           >
@@ -232,8 +232,8 @@ export default function Header({ onAddModalOpen }: any) {
                                 pr: 22,
                               }}
                             >
-                              {account?.address.slice(0, 4)}...
-                              {account?.address.slice(-4)}
+                              {account?.address.toString().slice(0, 4)}...
+                              {account?.address.toString().slice(-4)}
                             </Box>
                             <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
                           </Box>
