@@ -236,6 +236,7 @@ export default function CreateDeployment({
     setIsComplete(false)
     setError(null)
     setFormState({ ...initialFormState, siteName: generateRandomString(12) })
+    setIsRedeploying(false)
   }
 
   return (
