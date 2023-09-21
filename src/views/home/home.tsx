@@ -93,11 +93,13 @@ export function Home({ onAddModalOpen }: any) {
                 Decentralized Web Hosting for Humans
               </Heading>
               <Text maxW="3xl">
-                Imagine hosting your content with ease, while harnessing the
-                power of Web3's decentralization. GhostCloud empowers existing
-                "2.0" hosting companies to provide the advantages of
-                decentralized hosting to their users, without overwhelming them
-                with tokens, wallets, or complex concepts.
+                Discover the seamless convergence of simplicity and Web3’s
+                robust decentralization with GhostCloud. This platform is a
+                gateway for "2.0" hosting entities to offer the groundbreaking
+                benefits of decentralized hosting without the complexities of
+                tokens or wallets. With GhostCloud, experience innovation and
+                user-friendly accessibility, embracing the next era of web
+                technology effortlessly.
               </Text>
               <Stack spacing={6} direction="row">
                 {isAnonymous ? (
@@ -133,21 +135,21 @@ export function Home({ onAddModalOpen }: any) {
                 icon={<Icon as={GoSmiley} w={10} h={10} />}
                 title="Easy to use"
                 text={
-                  "GhostCloud is a simple platform that anyone can use, even if they don't have any experience with Web3."
+                  'GhostCloud provides a user-friendly interface, making Web3 accessible to everyone, regardless of their experience.'
                 }
               />
               <Feature
                 icon={<Icon as={GoLock} w={10} h={10} />}
                 title="Secure"
                 text={
-                  'GhostCloud uses a decentralized network of servers, making it more secure than traditional hosting solutions.'
+                  'GhostCloud leverages a decentralized server network, offering enhanced security compared to conventional hosting solutions.'
                 }
               />
               <Feature
                 icon={<Icon as={GoShieldCheck} w={10} h={10} />}
                 title="Uncompromising"
                 text={
-                  'GhostCloud is not subject to censorship, so your customers can be sure that their data is safe.'
+                  "GhostCloud stands resistant to censorship, ensuring your customers' data remains secure and unaltered."
                 }
               />
             </SimpleGrid>
@@ -168,12 +170,15 @@ export function Home({ onAddModalOpen }: any) {
 
           <Flex align="center" justify="center" p={6}>
             <Text maxW="3xl" align="center">
-              Web hosting is a stable market with steady growth, while Web3
-              holds immense potential for the future. As Web3 continues to
-              expand, the demand for streamlined content delivery solutions will
-              soar. While competitors exist, GhostCloud stands out by focusing
-              on seamlessly integrating with established hosting companies, not
-              limiting itself to the smaller Web3 market.
+              Explore the fusion of the stable, steadily growing market of web
+              hosting with the boundless potential of Web3 through GhostCloud.
+              As the horizons of Web3 broaden, the quest for streamlined,
+              efficient content delivery solutions is intensifying. GhostCloud
+              distinguishes itself in this competitive landscape by specializing
+              in seamless integrations with established hosting providers,
+              transcending the confines of the nascent Web3 market. Opt for
+              GhostCloud and be where innovation meets established market
+              stability!
             </Text>
           </Flex>
         </Box>

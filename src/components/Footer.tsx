@@ -10,8 +10,12 @@ import {
 import logo from '../assets/logo-white.png'
 import manifest from '../assets/manifest-powered.webp'
 import { Link as ReactRouterLink } from 'react-router-dom'
+import { useAccountsStore } from '../features/accounts'
+import { AnonymousIdentity } from '@liftedinit/many-js'
 
 export default function Footer() {
+  const account = useAccountsStore(s => s.byId.get(s.activeId))
+  const isAnonymous = account?.identity instanceof AnonymousIdentity
   const theme = useTheme()
 
   return (
@@ -37,9 +41,11 @@ export default function Footer() {
           <ChakraLink as={ReactRouterLink} to="/">
             Home
           </ChakraLink>
-          <ChakraLink as={ReactRouterLink} to="/dashboard">
-            Dashboard
-          </ChakraLink>
+          {!isAnonymous && (
+            <ChakraLink as={ReactRouterLink} to="/dashboard">
+              Dashboard
+            </ChakraLink>
+          )}
           <ChakraLink
             as={ReactRouterLink}
             to="/terms"
