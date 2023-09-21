@@ -61,7 +61,7 @@ const Td = (props: any) => {
       ) : (
         <Tooltip
           label={label === 'URL' ? value.replace('https://', '') : value}
-          aria-label="A tooltip"
+          aria-label="URL"
           openDelay={500}
         >
           <Text
