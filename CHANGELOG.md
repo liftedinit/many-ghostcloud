@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2023-09-22
+
+### Miscellaneous Tasks
+
+- Update tos and privacy policy ([#28](https://github.com/liftedinit/many-rs/issues/28))
+
 ## [0.1.0] - 2023-09-21
 
 ### Bug Fixes
