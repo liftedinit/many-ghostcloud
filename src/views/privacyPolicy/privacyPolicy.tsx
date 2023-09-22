@@ -8,66 +8,87 @@ export function PrivacyPolicy() {
           Privacy Policy
         </Heading>
         <Text>
-          This Privacy Policy describes how GhostCloud ("we", "us", or "our")
-          collects, uses, and shares information when you use our website or
+          This Privacy Policy outlines the procedures and practices of
+          GhostCloud ("we", "us", or "our") regarding the collection, use, and
+          sharing of your information when you interact with our website or
           application (collectively, the "Service").
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Information We Collect
         </Heading>
         <Text>
-          We may collect certain personal information from you when you use the
-          Service, such as name, email address
+          When you utilize our Service, we may gather personal information
+          including, but not limited to, your name and email address. This data
+          enables us to facilitate enhanced interaction within our Service and
+          understand our user base better.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           How We Use Your Information
         </Heading>
         <Text>
-          We use the information we collect for various purposes, including but
-          not limited to providing and improving the Service and sending
-          notifications.
+          The information we acquire is pivotal for various purposes. It allows
+          us to provide, maintain, and improve our Service, ensuring an
+          optimized and tailored user experience. Additionally, we utilize this
+          information to send you notifications and to communicate with you, if
+          necessary, about the Service.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Information Sharing and Disclosure
         </Heading>
         <Text>
-          We may share your information with third parties if required by law.
+          While we value your privacy, we may disclose your information to third
+          parties if mandated by law or if it is essential for the execution of
+          our Service. We will endeavor to inform you whenever your information
+          is shared, wherever possible, unless prohibited by law.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Cookies and Similar Technologies
         </Heading>
         <Text>
-          We may use cookies and similar technologies to collect information and
-          enhance your experience on the Service.
+          To augment your experience and collect information about your
+          interactions with the Service, we employ cookies and analogous
+          technologies. This allows us to understand user preferences and adjust
+          our Service accordingly, ensuring a smoother and more intuitive user
+          experience.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Your Choices
         </Heading>
         <Text>
-          You may have certain rights and choices regarding the information we
-          collect about you. You have access to your data.
+          We acknowledge your rights and choices regarding your personal
+          information. You have the right to access, modify, or delete your data
+          and to opt out of certain practices. Please review your account
+          settings or contact us directly to exercise these rights.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Security
         </Heading>
         <Text>
-          We take appropriate security measures to protect your information from
-          unauthorized access or disclosure.
+          Protecting your information is our priority. We implement suitable
+          security measures to safeguard your information from unauthorized
+          access, alteration, disclosure, or destruction. However, please be
+          aware that no security measures are perfect or impenetrable.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Updates to this Privacy Policy
         </Heading>
         <Text>
-          We may update this Privacy Policy from time to time, and any changes
-          will be effective when posted on this page.
+          This Privacy Policy may undergo modifications periodically. We advise
+          you to review it regularly. The revised policy will be effective
+          immediately upon being posted on this page, and your continued use of
+          the Service signifies your acceptance of such changes.
         </Text>
         <Heading as="h2" size="md" mt={8} mb={2}>
           Contact Us
         </Heading>
         <Text>
-          If you have any questions or concerns about this Privacy Policy,
-          please contact us at" "
-          <Link href="mailto:info@ghostcloud.com">info@ghostcloud.com</Link>
+          If you have questions, concerns, or suggestions regarding this Privacy
+          Policy, we welcome you to contact us at{' '}
+          <Link href="mailto:ghostcloud@liftedinit.org">
+            ghostcloud@liftedinit.org
+          </Link>
+          . We are committed to addressing your concerns to the best of our
+          ability.
         </Text>
       </Box>
     </Container>
