@@ -135,6 +135,8 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
             payload,
           })
         }
+
+        // TODO: revisit this approach, web.list returns a maximum of 100 websites
         const response: WebDeployInfo[] = await activeNetwork?.web?.list({
           order: ListOrderType.descending,
           filters,
