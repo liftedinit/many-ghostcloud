@@ -13,8 +13,7 @@ import { useMutation, useQueryClient } from 'react-query'
 import { v5 as uuidv5 } from 'uuid'
 import { WebDeployInfoWithUuid } from './types'
 
-// TODO: Pagination
-// const PAGE_SIZE = 11
+const PAGE_SIZE = 11
 
 export function useCreateDeployment() {
   const [, network] = useNetworkContext()
@@ -114,9 +113,14 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
   const [data, setData] = React.useState<WebDeployInfoWithUuid[]>([])
   const [activeNetwork, ,] = useNetworkContext()
   const [loading, setLoading] = React.useState(true)
-  // TODO: Pagination
-  // const [deployments, setDeployments] = React.useState<ArrayBuffer[]>([])
+  const [visibleDeployments, setVisibleDeployments] = React.useState<
+    WebDeployInfoWithUuid[]
+  >([])
+  const [deployments, setDeployments] = React.useState<WebDeployInfoWithUuid[]>(
+    [],
+  )
   const [error, setError] = React.useState(Error)
+  const [currentPage, setCurrentPage] = React.useState<any>(1)
 
   useEffect(() => {
     const fetchQuery = async () => {
@@ -131,9 +135,9 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
             payload,
           })
         }
+
+        // TODO: revisit this approach, web.list returns a maximum of 100 websites
         const response: WebDeployInfo[] = await activeNetwork?.web?.list({
-          // TODO: Pagination
-          // count: PAGE_SIZE,
           order: ListOrderType.descending,
           filters,
         })
@@ -146,6 +150,8 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
         )
 
         setData(data)
+        setVisibleDeployments(data.slice(0, PAGE_SIZE))
+        setCurrentPage(1)
         setLoading(false)
       } catch (err) {
         setError(err as Error)
@@ -153,36 +159,37 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
       }
     }
     fetchQuery()
-  }, [activeNetwork, address])
+  }, [activeNetwork, address, deployments])
 
-  // TODO: Pagination
-  // const hasNextPage = data.length === PAGE_SIZE
-  // const visibleDeployments = hasNextPage ? data.slice(0, PAGE_SIZE - 1) : data
+  const total = data.length
+  const numPages = Math.ceil(total / PAGE_SIZE)
+  const hasNextPage = currentPage < numPages
 
   return {
     error: error?.message,
     isError: error,
     isLoading: loading,
-    data,
-    // TODO: Pagination
-    // hasNextPage,
-    // currPageCount: deployments.length,
-    //   prevBtnProps: {
-    //     disabled: deployments.length === 0,
-    //     onClick: () => {
-    //       setDeployments(s => s.slice(1))
-    //     },
-    //   },
-    //   nextBtnProps: {
-    //     disabled: !hasNextPage,
-    //     onClick: () => {
-    //       const lastDeployment = data[PAGE_SIZE - 1]
-    //       setDeployments(s => [lastDeployment, ...s])
-    //     },
-    //   },
-    //   data: {
-    //     count: data.length,
-    //     transactions: visibleDeployments ?? [],
-    //   },
+    deployments: data,
+    setDeployments,
+    visibleDeployments,
+    total,
+    numPages,
+    currentPage,
+    prevBtnProps: {
+      disabled: currentPage === 1,
+      onClick: () => {
+        const prevIndex = PAGE_SIZE * (currentPage - 2)
+        setVisibleDeployments(data.slice(prevIndex, prevIndex + PAGE_SIZE))
+        setCurrentPage(currentPage - 1)
+      },
+    },
+    nextBtnProps: {
+      disabled: !hasNextPage,
+      onClick: () => {
+        const nextIndex = PAGE_SIZE * currentPage
+        setVisibleDeployments(data.slice(nextIndex, nextIndex + PAGE_SIZE))
+        setCurrentPage(currentPage + 1)
+      },
+    },
   }
 }

@@ -16,10 +16,7 @@ import { AnonymousIdentity } from '@liftedinit/many-js'
 import CreateDeployment from '../../components/CreateDeployment'
 import ConfirmDelete from '../../components/ConfirmDelete'
 import DeploymentsList from '../../components/DeploymentsList'
-import {
-  useDeploymentList,
-  WebDeployInfoWithUuid,
-} from '../../features/deployments'
+import { useDeploymentList } from '../../features/deployments'
 
 export function Dashboard() {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
@@ -36,20 +33,22 @@ export function Dashboard() {
   } = useDisclosure()
 
   const [isMobile] = useMediaQuery('(max-width: 640px)')
-  const [deployments, setDeployments] = useState<WebDeployInfoWithUuid[]>([])
   const [activeDeploymentUuid, setActiveDeploymentUuid] = useState('')
   const [isRedeploying, setIsRedeploying] = useState(false)
 
   // TODO: Handle error
-  const { data: allDeployments } = useDeploymentList({
+  const {
+    deployments,
+    setDeployments,
+    visibleDeployments,
+    nextBtnProps,
+    prevBtnProps,
+    numPages,
+    total,
+    currentPage,
+  } = useDeploymentList({
     address: account?.address,
   })
-
-  useEffect(() => {
-    if (allDeployments) {
-      setDeployments(allDeployments)
-    }
-  }, [allDeployments])
 
   const handleDeleteDeployment = (uuid: string) => {
     setActiveDeploymentUuid(uuid)
@@ -103,9 +102,14 @@ export function Dashboard() {
         </Grid>
 
         <DeploymentsList
-          deployments={deployments}
+          deployments={visibleDeployments}
           onDelete={handleDeleteDeployment}
           onEdit={handleEditDeployment}
+          nextBtnProps={nextBtnProps}
+          prevBtnProps={prevBtnProps}
+          numPages={numPages}
+          total={total}
+          currentPage={currentPage}
         />
       </Box>
 
@@ -115,8 +119,8 @@ export function Dashboard() {
         deployments={deployments}
         activeDeploymentUuid={activeDeploymentUuid}
         setDeployments={setDeployments}
-	isRedeploying={isRedeploying}
-	setIsRedeploying={setIsRedeploying}
+        isRedeploying={isRedeploying}
+        setIsRedeploying={setIsRedeploying}
       />
       <ConfirmDelete
         isOpen={confirmDeleteIsOpen}

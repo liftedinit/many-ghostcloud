@@ -11,6 +11,7 @@ import {
   useMediaQuery,
 } from '@chakra-ui/react'
 import { DeleteIcon, EditIcon } from '@liftedinit/ui'
+import Pagination from './Pagination'
 
 const formatUrlDisplay = (url: string) => {
   if (url.length <= 34) {
@@ -86,86 +87,103 @@ const Td = (props: any) => {
 }
 
 export default function DeploymentsList(props: any) {
-  const { deployments, onDelete, onEdit } = props
+  const {
+    currentPage,
+    deployments,
+    onDelete,
+    onEdit,
+    nextBtnProps,
+    prevBtnProps,
+    numPages,
+  } = props
   const theme = useTheme()
   const [isMobile] = useMediaQuery('(max-width: 640px)')
 
   return (
-    <Grid
-      templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr'}
-      gap={0}
-      mt={4}
-      mb={40}
-    >
-      <GridItem
-        colSpan={1}
-        borderBottom={`1px solid ${theme.colors.gray[200]}`}
-        py={2}
-        display={isMobile ? 'none' : 'flex'}
-        alignItems="center"
+    <>
+      <Grid
+        templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr'}
+        gap={0}
+        mt={4}
+        mb={10}
       >
-        <Text fontWeight="bold">Name</Text>
-      </GridItem>
-      <GridItem
-        colSpan={1}
-        borderBottom={`1px solid ${theme.colors.gray[200]}`}
-        py={2}
-        display={isMobile ? 'none' : 'flex'}
-        alignItems="center"
-      >
-        <Text fontWeight="bold">Description</Text>
-      </GridItem>
-      <GridItem
-        colSpan={1}
-        borderBottom={`1px solid ${theme.colors.gray[200]}`}
-        py={2}
-        display={isMobile ? 'none' : 'flex'}
-        alignItems="center"
-      >
-        <Text fontWeight="bold">URL</Text>
-      </GridItem>
-      <GridItem
-        colSpan={1}
-        borderBottom={`1px solid ${theme.colors.gray[200]}`}
-        display={isMobile ? 'none' : 'flex'}
-      ></GridItem>
-      {deployments.map((deployment: any) => {
-        const { uuid, siteName, siteDescription, deploymentUrl } = deployment
-        return (
-          <Fragment key={uuid}>
-            <Td label="Name" value={siteName} />
-            <Td label="Description" value={siteDescription} />
-            <Td label="URL" value={deploymentUrl} />
+        <GridItem
+          colSpan={1}
+          borderBottom={`1px solid ${theme.colors.gray[200]}`}
+          py={2}
+          display={isMobile ? 'none' : 'flex'}
+          alignItems="center"
+        >
+          <Text fontWeight="bold">Name</Text>
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          borderBottom={`1px solid ${theme.colors.gray[200]}`}
+          py={2}
+          display={isMobile ? 'none' : 'flex'}
+          alignItems="center"
+        >
+          <Text fontWeight="bold">Description</Text>
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          borderBottom={`1px solid ${theme.colors.gray[200]}`}
+          py={2}
+          display={isMobile ? 'none' : 'flex'}
+          alignItems="center"
+        >
+          <Text fontWeight="bold">URL</Text>
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          borderBottom={`1px solid ${theme.colors.gray[200]}`}
+          display={isMobile ? 'none' : 'flex'}
+        ></GridItem>
+        {deployments.map((deployment: any) => {
+          const { uuid, siteName, siteDescription, deploymentUrl } = deployment
+          return (
+            <Fragment key={uuid}>
+              <Td label="Name" value={siteName} />
+              <Td label="Description" value={siteDescription} />
+              <Td label="URL" value={deploymentUrl} />
 
-            <GridItem
-              colSpan={1}
-              borderBottom={`1px solid ${theme.colors.gray[200]}`}
-              py={2}
-              display="flex"
-              alignItems="center"
-              justifyContent={isMobile ? 'flex-start' : 'flex-end'}
-            >
-              <IconButton
-                onClick={() => onEdit(uuid)}
-                aria-label="Redeploy"
-                icon={<EditIcon />}
-                size="sm"
-                fontWeight="normal"
-                mr={3}
-              />
-              <IconButton
-                onClick={() => onDelete(uuid)}
-                aria-label="Delete"
-                icon={<DeleteIcon />}
-                size="sm"
-                fontWeight="normal"
+              <GridItem
+                colSpan={1}
+                borderBottom={`1px solid ${theme.colors.gray[200]}`}
+                py={2}
+                display="flex"
+                alignItems="center"
+                justifyContent={isMobile ? 'flex-start' : 'flex-end'}
               >
-                Delete
-              </IconButton>
-            </GridItem>
-          </Fragment>
-        )
-      })}
-    </Grid>
+                <IconButton
+                  onClick={() => onEdit(uuid)}
+                  aria-label="Redeploy"
+                  icon={<EditIcon />}
+                  size="sm"
+                  fontWeight="normal"
+                  mr={3}
+                />
+                <IconButton
+                  onClick={() => onDelete(uuid)}
+                  aria-label="Delete"
+                  icon={<DeleteIcon />}
+                  size="sm"
+                  fontWeight="normal"
+                >
+                  Delete
+                </IconButton>
+              </GridItem>
+            </Fragment>
+          )
+        })}
+      </Grid>
+
+      <Pagination
+        currentPage={currentPage}
+        nextBtnProps={nextBtnProps}
+        prevBtnProps={prevBtnProps}
+        numPages={numPages}
+      />
+    </>
   )
 }
