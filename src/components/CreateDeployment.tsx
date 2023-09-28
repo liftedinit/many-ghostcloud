@@ -357,11 +357,10 @@ export default function CreateDeployment({
                     height: '100px',
                     padding: 4,
                     borderWidth: 1,
-                    borderRadius: 2,
-                    borderColor: theme.colors.gray[100],
+                    borderRadius: 6,
+                    borderColor: theme.colors.gray[400],
                     backgroundColor: theme.colors.gray[50],
                     color: theme.colors.gray[500],
-                    outline: 'none',
                     cursor: 'pointer',
                   }}
                 >
