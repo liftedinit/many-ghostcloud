@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   Box,
+  Button,
   Container,
   Grid,
   GridItem,
@@ -190,7 +191,17 @@ export default function Header({ onAddModalOpen }: any) {
                     size="lg"
                     icon={<BiSolidUser />}
                     aria-label="Account"
-                    onClick={accountOpen ? onAccountClose : onAccountOpen}
+                    onClick={() => {
+                      if (isAnonymous) {
+                        handleLogin()
+                        return
+                      }
+                      if (accountOpen) {
+                        onAccountClose()
+                      } else {
+                        onAccountOpen()
+                      }
+                    }}
                     bg={theme.colors.white}
                     mr={-4}
                   />
@@ -204,20 +215,13 @@ export default function Header({ onAddModalOpen }: any) {
                       {!isAnonymous && (
                         <>
                           <Text fontWeight={'bold'}>{account?.name}</Text>
-                          <Box
+                          <Button
+                            variant="outline"
                             sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              border: `1px solid ${theme.colors.gray[300]}`,
-                              py: 2,
-                              px: 4,
-                              borderRadius: '4px',
-                              cursor: 'pointer',
                               transition: 'background 1s',
                               background: copied
                                 ? theme.colors.gray[300]
                                 : 'none',
-                              width: 'fit-content',
                             }}
                             onClick={() => {
                               setCopied(true)
@@ -236,28 +240,20 @@ export default function Header({ onAddModalOpen }: any) {
                               {account?.address.toString().slice(-4)}
                             </Box>
                             <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
-                          </Box>
+                          </Button>
                         </>
                       )}
-
-                      {isAnonymous ? (
-                        <NavLink
-                          onClick={() => {
-                            handleLogin()
-                          }}
-                        >
-                          Log In
-                        </NavLink>
-                      ) : (
-                        <NavLink
+                      {!isAnonymous ? (
+                        <Button
+                          variant="outline"
                           onClick={() => {
                             handleLogout()
                             onAccountClose()
                           }}
                         >
                           Log Out
-                        </NavLink>
-                      )}
+                        </Button>
+                      ) : null}
                     </Stack>
                   </PopoverBody>
                 </PopoverContent>
