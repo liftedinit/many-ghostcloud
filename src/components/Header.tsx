@@ -212,38 +212,33 @@ export default function Header({ onAddModalOpen }: any) {
                     p={4}
                   >
                     <Stack as="nav" spacing={4}>
-                      {!isAnonymous && (
-                        <>
-                          <Text fontWeight={'bold'}>{account?.name}</Text>
-                          <Button
-                            variant="outline"
+                      <>
+                        <Text fontWeight={'bold'}>{account?.name}</Text>
+                        <Button
+                          variant="outline"
+                          sx={{
+                            background: copied
+                              ? theme.colors.gray[100]
+                              : 'none',
+                          }}
+                          onClick={() => {
+                            setCopied(true)
+                            setTimeout(() => setCopied(false), 1000)
+                            navigator.clipboard.writeText(
+                              account?.address.toString() || '',
+                            )
+                          }}
+                        >
+                          <Box
                             sx={{
-                              transition: 'background 1s',
-                              background: copied
-                                ? theme.colors.gray[300]
-                                : 'none',
-                            }}
-                            onClick={() => {
-                              setCopied(true)
-                              setTimeout(() => setCopied(false), 1000)
-                              navigator.clipboard.writeText(
-                                account?.address.toString() || '',
-                              )
+                              pr: 22,
                             }}
                           >
-                            <Box
-                              sx={{
-                                pr: 22,
-                              }}
-                            >
-                              {account?.address.toString().slice(0, 4)}...
-                              {account?.address.toString().slice(-4)}
-                            </Box>
-                            <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
-                          </Button>
-                        </>
-                      )}
-                      {!isAnonymous ? (
+                            {account?.address.toString().slice(0, 4)}...
+                            {account?.address.toString().slice(-4)}
+                          </Box>
+                          <Icon as={copied ? BiCheck : BiCopy} w={5} h={5} />
+                        </Button>
                         <Button
                           variant="outline"
                           onClick={() => {
@@ -253,7 +248,7 @@ export default function Header({ onAddModalOpen }: any) {
                         >
                           Log Out
                         </Button>
-                      ) : null}
+                      </>
                     </Stack>
                   </PopoverBody>
                 </PopoverContent>
