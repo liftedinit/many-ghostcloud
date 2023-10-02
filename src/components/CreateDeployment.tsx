@@ -17,6 +17,7 @@ import {
   FormLabel,
   Heading,
   Textarea,
+  Flex,
 } from '@chakra-ui/react'
 import { useToast } from '@liftedinit/ui'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -40,6 +41,7 @@ import {
 } from '@liftedinit/many-js'
 import { useAccountsStore } from '../features/accounts'
 import { generateRandomString } from '../shared'
+import Info from './Info'
 
 const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backend, including the envelope and header overhead
 const SITE_NAME_MAX_LENGTH = 12
@@ -295,8 +297,13 @@ export default function CreateDeployment({
           ) : (
             <form onSubmit={handleSubmit}>
               <Stack spacing={5}>
-                <FormControl isRequired>
-                  <FormLabel htmlFor="siteName">Site Name</FormLabel>
+                <FormControl>
+                  <Flex>
+                    <FormLabel htmlFor="siteName">Site Name</FormLabel>
+                    <Box ml="auto">
+                      <Info id="siteName" />
+                    </Box>
+                  </Flex>
                   <Input
                     id="siteName"
                     name="siteName"
@@ -310,9 +317,14 @@ export default function CreateDeployment({
                   />
                 </FormControl>
                 <FormControl isRequired>
-                  <FormLabel htmlFor="siteDescription">
-                    Site Description
-                  </FormLabel>
+                  <Flex align="center">
+                    <FormLabel htmlFor="siteDescription">
+                      Site Description
+                    </FormLabel>
+                    <Box ml="auto">
+                      <Info id="siteDescription" />
+                    </Box>
+                  </Flex>
                   <Textarea
                     id="siteDescription"
                     name="siteDescription"
@@ -329,9 +341,14 @@ export default function CreateDeployment({
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel htmlFor="transactionMemo">
-                    Transaction Memo
-                  </FormLabel>
+                  <Flex align="center">
+                    <FormLabel htmlFor="transactionMemo">
+                      Transaction Memo
+                    </FormLabel>
+                    <Box ml="auto">
+                      <Info id="transactionMemo" />
+                    </Box>
+                  </Flex>
                   <Input
                     id="transactionMemo"
                     name="transactionMemo"
@@ -347,75 +364,85 @@ export default function CreateDeployment({
                   </Text>
                 </FormControl>
 
-                <Box
-                  {...getRootProps()}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100px',
-                    padding: 4,
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    borderColor: theme.colors.gray[400],
-                    backgroundColor: theme.colors.gray[50],
-                    color: theme.colors.gray[500],
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input {...getInputProps()} name="zipFile" />
-                  <Icon
-                    as={BiSolidCloudUpload}
-                    w={30}
-                    h={30}
-                    color={theme.colors.gray[500]}
-                    mb={3}
-                  />
-                  <Text align="center">
-                    Drag a zip file here, or click to select a file
-                  </Text>
-                </Box>
-                {formState.zipFile ? (
-                  <Text
-                    display="flex"
-                    mt={4}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Box
-                      as="span"
-                      w={5}
-                      h={5}
-                      display="flex"
-                      justifyContent="center"
-                      color={theme.colors.white}
-                      rounded="full"
-                      bg={theme.colors.green[400]}
-                      mr={2}
-                    >
-                      <Icon as={BiCheck} w={5} h={5} />
+                <FormControl isRequired>
+                  <Flex align="center">
+                    <FormLabel htmlFor="transactionMemo">
+                      Deployment File
+                    </FormLabel>
+                    <Box ml="auto">
+                      <Info id="deploymentFile" />
                     </Box>
-                    {acceptedFileItems}
-                  </Text>
-                ) : null}
-                {fileRejections.length > 0 && (
-                  <Box mt={4}>
-                    {fileRejections.map(rejection => (
-                      <Box
-                        key={rejection.file.name}
-                        color={theme.colors.red[600]}
-                        display="flex"
-                        alignItems="center"
-                      >
-                        <Icon as={IoWarning} w={6} h={6} mr={2} />
-                        {rejection.errors.map(error => (
-                          <Text key={error.code}>{error.message} </Text>
-                        ))}
-                      </Box>
-                    ))}
+                  </Flex>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100px',
+                      padding: 4,
+                      borderWidth: 1,
+                      borderRadius: 6,
+                      borderColor: theme.colors.gray[400],
+                      backgroundColor: theme.colors.gray[50],
+                      color: theme.colors.gray[500],
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input {...getInputProps()} name="zipFile" />
+                    <Icon
+                      as={BiSolidCloudUpload}
+                      w={30}
+                      h={30}
+                      color={theme.colors.gray[500]}
+                      mb={3}
+                    />
+                    <Text align="center">
+                      Drag a zip file here, or click to select a file
+                    </Text>
                   </Box>
-                )}
+                  {formState.zipFile ? (
+                    <Text
+                      display="flex"
+                      mt={4}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Box
+                        as="span"
+                        w={5}
+                        h={5}
+                        display="flex"
+                        justifyContent="center"
+                        color={theme.colors.white}
+                        rounded="full"
+                        bg={theme.colors.green[400]}
+                        mr={2}
+                      >
+                        <Icon as={BiCheck} w={5} h={5} />
+                      </Box>
+                      {acceptedFileItems}
+                    </Text>
+                  ) : null}
+                  {fileRejections.length > 0 && (
+                    <Box mt={4}>
+                      {fileRejections.map(rejection => (
+                        <Box
+                          key={rejection.file.name}
+                          color={theme.colors.red[600]}
+                          display="flex"
+                          alignItems="center"
+                        >
+                          <Icon as={IoWarning} w={6} h={6} mr={2} />
+                          {rejection.errors.map(error => (
+                            <Text key={error.code}>{error.message} </Text>
+                          ))}
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </FormControl>
               </Stack>
               <Box
                 display="flex"
