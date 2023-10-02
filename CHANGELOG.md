@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2023-10-02
+
+### Bug Fixes
+
+- Deployment modal/account menu focus behavior [33] ([#34](https://github.com/liftedinit/ghostcloud/issues/34))
+- Remove index.html in link ([#35](https://github.com/liftedinit/ghostcloud/issues/35))
+
+### Features
+
+- Deployments list pagination [27] ([#30](https://github.com/liftedinit/ghostcloud/issues/30))
+
 ## [0.1.2] - 2023-09-22
 
 ### Bug Fixes
