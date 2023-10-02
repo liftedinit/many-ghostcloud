@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import Help, { tips } from '../Info'
+import Info, { tips } from '../Info'
 
 jest.mock('@chakra-ui/react', () => ({
   ...jest.requireActual('@chakra-ui/react'),
@@ -13,10 +13,10 @@ jest.mock('@chakra-ui/react', () => ({
   }),
 }))
 
-describe('Help', () => {
+describe('Info', () => {
   Object.keys(tips).forEach(key => {
     it('renders', async () => {
-      render(<Help id={key as keyof typeof tips} />)
+      render(<Info id={key as keyof typeof tips} />)
       const element = screen.getByTestId(`info-${key}`)
       expect(element).toBeInTheDocument()
       fireEvent.mouseOver(element)
