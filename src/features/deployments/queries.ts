@@ -1,5 +1,5 @@
 import { useNetworkContext } from 'features/network'
-import React, { useEffect } from 'react'
+import { useState } from 'react'
 import {
   Address,
   DeploymentSource,
@@ -9,13 +9,13 @@ import {
   OwnerFilter,
   WebDeployInfo,
 } from '@liftedinit/many-js'
-import { useMutation, useQueryClient } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { v5 as uuidv5 } from 'uuid'
-import { WebDeployInfoWithUuid } from './types'
+import { Deployment, WebDeployInfoWithUuid } from './types'
 
 const PAGE_SIZE = 11
 
-export function useCreateDeployment() {
+export function useCreateDeployment(address: Address | undefined) {
   const [, network] = useNetworkContext()
   const queryClient = useQueryClient()
   return useMutation<
@@ -40,13 +40,13 @@ export function useCreateDeployment() {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['web', 'list'])
+        queryClient.invalidateQueries(['web', 'list', address])
       },
     },
   )
 }
 
-export function useUpdateDeployment() {
+export function useUpdateDeployment(address: Address | undefined) {
   const [, network] = useNetworkContext()
   const queryClient = useQueryClient()
   return useMutation<
@@ -71,13 +71,13 @@ export function useUpdateDeployment() {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['web', 'list'])
+        queryClient.invalidateQueries(['web', 'list', address])
       },
     },
   )
 }
 
-export function useRemoveDeployment() {
+export function useRemoveDeployment(address: Address | undefined) {
   const [, network] = useNetworkContext()
   const queryClient = useQueryClient()
   return useMutation<
@@ -98,7 +98,7 @@ export function useRemoveDeployment() {
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['web', 'list'])
+        queryClient.invalidateQueries(['web', 'list', address])
       },
     },
   )
@@ -110,86 +110,72 @@ interface DeploymentsListArgs {
 }
 
 export function useDeploymentList({ address }: DeploymentsListArgs) {
-  const [data, setData] = React.useState<WebDeployInfoWithUuid[]>([])
+  const [deployments, setDeployments] = useState<Deployment[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
   const [activeNetwork, ,] = useNetworkContext()
-  const [loading, setLoading] = React.useState(true)
-  const [visibleDeployments, setVisibleDeployments] = React.useState<
-    WebDeployInfoWithUuid[]
-  >([])
-  const [deployments, setDeployments] = React.useState<WebDeployInfoWithUuid[]>(
-    [],
-  )
-  const [error, setError] = React.useState(Error)
-  const [currentPage, setCurrentPage] = React.useState<any>(1)
 
-  useEffect(() => {
-    const fetchQuery = async () => {
-      try {
-        setLoading(true)
-
-        const filters = []
-        if (address) {
-          const payload: OwnerFilter = [0, new Map().set(0, address)]
-          filters.push({
-            type: FilterTypes.Owner,
-            payload,
-          })
-        }
-
-        // TODO: revisit this approach, web.list returns a maximum of 100 websites
-        const response: WebDeployInfo[] = await activeNetwork?.web?.list({
-          order: ListOrderType.descending,
-          filters,
+  const fetchDeployments = async () => {
+    try {
+      const filters = []
+      if (address) {
+        const payload: OwnerFilter = [0, new Map().set(0, address)]
+        filters.push({
+          type: FilterTypes.Owner,
+          payload,
         })
-
-        const data: WebDeployInfoWithUuid[] = response?.map(
-          (item: WebDeployInfo) => ({
-            ...item,
-            uuid: uuidv5(item.deploymentUrl, uuidv5.URL),
-          }),
-        )
-
-        setData(data)
-        setVisibleDeployments(data.slice(0, PAGE_SIZE))
-        setCurrentPage(1)
-        setLoading(false)
-      } catch (err) {
-        setError(err as Error)
-        setLoading(false)
       }
-    }
-    fetchQuery()
-  }, [activeNetwork, address, deployments])
 
-  const total = data.length
+      const response = await activeNetwork?.web?.list({
+        order: ListOrderType.descending,
+        filters,
+      })
+
+      const data: WebDeployInfoWithUuid[] = response?.deployments.map(
+        (item: WebDeployInfo) => ({
+          ...item,
+          uuid: uuidv5(item.deploymentUrl, uuidv5.URL),
+        }),
+      )
+      setDeployments(data)
+      return data
+    } catch (err) {
+      throw err
+    }
+  }
+
+  const { data, isError, error, isLoading } = useQuery<Deployment[], Error>(
+    ['web', 'list', address],
+    fetchDeployments,
+  )
+
+  const total = data?.length ?? 0
   const numPages = Math.ceil(total / PAGE_SIZE)
   const hasNextPage = currentPage < numPages
+  const start = (currentPage - 1) * PAGE_SIZE
+  const end = start + PAGE_SIZE
 
   return {
+    isError,
     error: error?.message,
-    isError: error,
-    isLoading: loading,
-    deployments: data,
-    setDeployments,
-    visibleDeployments,
+    isLoading,
+    hasNextPage,
+    visibleDeployments: data?.slice(start, end) ?? [],
     total,
     numPages,
     currentPage,
+    setDeployments,
     prevBtnProps: {
       disabled: currentPage === 1,
       onClick: () => {
-        const prevIndex = PAGE_SIZE * (currentPage - 2)
-        setVisibleDeployments(data.slice(prevIndex, prevIndex + PAGE_SIZE))
-        setCurrentPage(currentPage - 1)
+        setCurrentPage(s => s - 1)
       },
     },
     nextBtnProps: {
       disabled: !hasNextPage,
       onClick: () => {
-        const nextIndex = PAGE_SIZE * currentPage
-        setVisibleDeployments(data.slice(nextIndex, nextIndex + PAGE_SIZE))
-        setCurrentPage(currentPage + 1)
+        setCurrentPage(s => s + 1)
       },
     },
+    deployments,
   }
 }

@@ -44,7 +44,7 @@ export default function ConfirmDelete({
     onClose()
   }
 
-  const removeDeploymentMutation = useRemoveDeployment()
+  const removeDeploymentMutation = useRemoveDeployment(account?.address)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
