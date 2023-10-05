@@ -1,12 +1,10 @@
-import { Deployment, WebDeployInfoWithUuid } from './types'
+import { Deployment } from './types'
 import { WebDeployInfo } from '@liftedinit/many-js'
-import { v5 as uuidv5 } from 'uuid'
 
 type HandleMutationProps = {
   returnedData: WebDeployInfo
   deployments: Deployment[]
   activeDeploymentUuid: string
-  setDeployments: (deployments: Deployment[]) => void
   setIsSubmitting: (value: boolean) => void
   setIsComplete: (value: boolean) => void
   setIsRedeploying: (value: boolean) => void
@@ -18,7 +16,6 @@ export const handleDeploymentCreationSuccess = (
     returnedData,
     deployments,
     activeDeploymentUuid,
-    setDeployments,
     setIsSubmitting,
     setIsComplete,
     setIsRedeploying,
@@ -29,7 +26,6 @@ export const handleDeploymentCreationSuccess = (
     returnedData,
     deployments,
     activeDeploymentUuid,
-    setDeployments,
     setIsSubmitting,
     setIsComplete,
     setIsRedeploying,
@@ -38,9 +34,6 @@ export const handleDeploymentCreationSuccess = (
 
 const handleDeploymentCreationMutationSuccess = ({
   returnedData,
-  deployments,
-  activeDeploymentUuid,
-  setDeployments,
   setIsSubmitting,
   setIsComplete,
   setIsRedeploying,
@@ -49,17 +42,6 @@ const handleDeploymentCreationMutationSuccess = ({
     // Handle the error, perhaps set some state or throw an error
     throw new Error('Deployment URL is missing')
   }
-
-  const returnedDataWithUuid: WebDeployInfoWithUuid = {
-    uuid: uuidv5(returnedData.deploymentUrl, uuidv5.URL),
-    ...returnedData,
-  }
-
-  const newDeployments = deployments.filter(
-    (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-  )
-
-  setDeployments([...newDeployments, returnedDataWithUuid])
 
   setIsSubmitting(false)
   setIsComplete(true)

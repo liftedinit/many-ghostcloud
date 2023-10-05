@@ -70,7 +70,6 @@ type CreateDeploymentProps = {
   isOpen: boolean
   deployments: Deployment[]
   activeDeploymentUuid: string
-  setDeployments: (deployments: Deployment[]) => void
   isRedeploying: boolean
   setIsRedeploying: (value: boolean) => void
 }
@@ -87,7 +86,6 @@ export default function CreateDeployment({
   isOpen,
   deployments,
   activeDeploymentUuid,
-  setDeployments,
   isRedeploying,
   setIsRedeploying,
 }: CreateDeploymentProps) {
@@ -175,13 +173,12 @@ export default function CreateDeployment({
         returnedData,
         deployments,
         activeDeploymentUuid,
-        setDeployments,
         setIsSubmitting,
         setIsComplete,
         setIsRedeploying,
       })
     },
-    [deployments, activeDeploymentUuid, setDeployments, setIsRedeploying],
+    [deployments, activeDeploymentUuid, setIsRedeploying],
   )
 
   const handleError = useCallback(

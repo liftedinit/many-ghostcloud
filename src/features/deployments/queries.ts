@@ -109,10 +109,14 @@ interface DeploymentsListArgs {
   filter?: {}
 }
 
+interface DeploymentsListReturn {
+  totalCount: number
+  deployments: Deployment[]
+}
+
 export function useDeploymentList({ address }: DeploymentsListArgs) {
-  const [deployments, setDeployments] = useState<Deployment[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [activeNetwork, ,] = useNetworkContext()
+  const [page, setPage] = useState(1)
+  const [activeNetwork] = useNetworkContext()
 
   const fetchDeployments = async () => {
     try {
@@ -126,54 +130,58 @@ export function useDeploymentList({ address }: DeploymentsListArgs) {
       }
 
       const response = await activeNetwork?.web?.list({
+        count: PAGE_SIZE,
         order: ListOrderType.descending,
+        page,
         filters,
       })
-
       const data: WebDeployInfoWithUuid[] = response?.deployments.map(
         (item: WebDeployInfo) => ({
           ...item,
           uuid: uuidv5(item.deploymentUrl, uuidv5.URL),
         }),
       )
-      setDeployments(data)
-      return data
+      const totalCount = response?.totalCount ?? 0
+      return {
+        deployments: data,
+        totalCount,
+      }
     } catch (err) {
+      console.error(err)
       throw err
     }
   }
 
-  const { data, isError, error, isLoading } = useQuery<Deployment[], Error>(
-    ['web', 'list', address],
-    fetchDeployments,
-  )
+  const { data, isError, error, isLoading } = useQuery<
+    DeploymentsListReturn,
+    Error
+  >(['web', 'list', address, page], fetchDeployments, {
+    keepPreviousData: true,
+  })
 
-  const total = data?.length ?? 0
+  const total = data?.totalCount ?? 0
   const numPages = Math.ceil(total / PAGE_SIZE)
-  const hasNextPage = currentPage < numPages
-  const start = (currentPage - 1) * PAGE_SIZE
-  const end = start + PAGE_SIZE
+  const hasNextPage = page < numPages
+  const deployments = data?.deployments ?? []
 
   return {
     isError,
     error: error?.message,
     isLoading,
     hasNextPage,
-    visibleDeployments: data?.slice(start, end) ?? [],
-    total,
+    currentPage: page,
     numPages,
-    currentPage,
-    setDeployments,
+    total,
     prevBtnProps: {
-      disabled: currentPage === 1,
-      onClick: () => {
-        setCurrentPage(s => s - 1)
+      disabled: page === 1,
+      onClick: async () => {
+        setPage(s => Math.max(s - 1, 0))
       },
     },
     nextBtnProps: {
       disabled: !hasNextPage,
-      onClick: () => {
-        setCurrentPage(s => s + 1)
+      onClick: async () => {
+        setPage(s => s + 1)
       },
     },
     deployments,

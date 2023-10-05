@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PlusIcon } from '@liftedinit/ui'
+import { PlusIcon, Center, Spinner, Text } from '@liftedinit/ui'
 import {
   Box,
   Button,
@@ -39,13 +39,14 @@ export function Dashboard() {
   // TODO: Handle error
   const {
     deployments,
-    setDeployments,
-    visibleDeployments,
     nextBtnProps,
     prevBtnProps,
+    currentPage,
     numPages,
     total,
-    currentPage,
+    isError,
+    isLoading,
+    error,
   } = useDeploymentList({
     address: account?.address,
   })
@@ -71,64 +72,79 @@ export function Dashboard() {
   }
 
   return (
-    <Container maxW="4xl" minH={'80vh'}>
-      <Box py={8}>
-        <Grid
-          templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}
-          gap={0}
-          mt={4}
-        >
-          <GridItem colSpan={1}>
-            <Heading as="h2" size="md" my={5}>
-              Deployments
-            </Heading>
-          </GridItem>
-          <GridItem
-            colSpan={1}
-            display="flex"
-            justifyContent={isMobile ? 'flex-start' : 'flex-end'}
-            alignItems="center"
+    <>
+      {isLoading ? (
+        <Center position="absolute" left={0} right={0}>
+          <Spinner size="lg" />
+        </Center>
+      ) : null}
+      <Container maxW="4xl" minH={'80vh'}>
+        <Box py={8}>
+          <Grid
+            templateColumns={`repeat(${isMobile ? 1 : 2}, 1fr)`}
+            gap={0}
+            mt={4}
           >
-            <Button
-              onClick={() => {
-                createDeploymentOnOpen()
-                setActiveDeploymentUuid('')
-              }}
-              leftIcon={<PlusIcon />}
+            <GridItem colSpan={1}>
+              <Heading as="h2" size="md" my={5}>
+                Deployments
+              </Heading>
+            </GridItem>
+            <GridItem
+              colSpan={1}
+              display="flex"
+              justifyContent={isMobile ? 'flex-start' : 'flex-end'}
+              alignItems="center"
             >
-              Create Deployment
-            </Button>
-          </GridItem>
-        </Grid>
+              <Button
+                onClick={() => {
+                  createDeploymentOnOpen()
+                  setActiveDeploymentUuid('')
+                }}
+                leftIcon={<PlusIcon />}
+              >
+                Create Deployment
+              </Button>
+            </GridItem>
+          </Grid>
 
-        <DeploymentsList
-          deployments={visibleDeployments}
-          onDelete={handleDeleteDeployment}
-          onEdit={handleEditDeployment}
-          nextBtnProps={nextBtnProps}
-          prevBtnProps={prevBtnProps}
-          numPages={numPages}
-          total={total}
-          currentPage={currentPage}
+          <DeploymentsList
+            deployments={deployments}
+            onDelete={handleDeleteDeployment}
+            onEdit={handleEditDeployment}
+            nextBtnProps={nextBtnProps}
+            prevBtnProps={prevBtnProps}
+            numPages={numPages}
+            total={total}
+            currentPage={currentPage}
+          />
+          {!isError && !isLoading && deployments.length === 0 ? (
+            <Center>
+              <Text fontSize="lg">There are no deployments.</Text>
+            </Center>
+          ) : null}
+          {isError && error ? (
+            <Center>
+              <Text fontSize="lg">{error}</Text>
+            </Center>
+          ) : null}
+        </Box>
+
+        <CreateDeployment
+          isOpen={createDeploymentIsOpen}
+          onClose={createDeploymentOnClose}
+          deployments={deployments}
+          activeDeploymentUuid={activeDeploymentUuid}
+          isRedeploying={isRedeploying}
+          setIsRedeploying={setIsRedeploying}
         />
-      </Box>
-
-      <CreateDeployment
-        isOpen={createDeploymentIsOpen}
-        onClose={createDeploymentOnClose}
-        deployments={deployments}
-        activeDeploymentUuid={activeDeploymentUuid}
-        setDeployments={setDeployments}
-        isRedeploying={isRedeploying}
-        setIsRedeploying={setIsRedeploying}
-      />
-      <ConfirmDelete
-        isOpen={confirmDeleteIsOpen}
-        onClose={confirmDeleteOnClose}
-        deployments={deployments}
-        activeDeploymentUuid={activeDeploymentUuid}
-        setDeployments={setDeployments}
-      />
-    </Container>
+        <ConfirmDelete
+          isOpen={confirmDeleteIsOpen}
+          onClose={confirmDeleteOnClose}
+          deployments={deployments}
+          activeDeploymentUuid={activeDeploymentUuid}
+        />
+      </Container>
+    </>
   )
 }
