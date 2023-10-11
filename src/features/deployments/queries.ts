@@ -22,7 +22,7 @@ export function useCreateDeployment(address: Address | undefined) {
     WebDeployInfo,
     Error,
     {
-      owner?: Address | string
+      owner?: Address
       siteName: string
       siteDescription?: string
       deploymentSource: DeploymentSource
@@ -30,7 +30,7 @@ export function useCreateDeployment(address: Address | undefined) {
     }
   >(
     async (vars: {
-      owner?: Address | string
+      owner?: Address
       siteName: string
       siteDescription?: string
       deploymentSource: DeploymentSource
@@ -53,7 +53,7 @@ export function useUpdateDeployment(address: Address | undefined) {
     WebDeployInfo,
     Error,
     {
-      owner?: Address | string
+      owner?: Address
       siteName: string
       siteDescription?: string
       deploymentSource: DeploymentSource
@@ -61,7 +61,7 @@ export function useUpdateDeployment(address: Address | undefined) {
     }
   >(
     async (vars: {
-      owner?: Address | string
+      owner?: Address
       siteName: string
       siteDescription?: string
       deploymentSource: DeploymentSource
@@ -84,16 +84,12 @@ export function useRemoveDeployment(address: Address | undefined) {
     void,
     Error,
     {
-      owner?: Address | string
+      owner?: Address
       siteName: string
       memo?: Memo
     }
   >(
-    async (vars: {
-      owner?: Address | string
-      siteName: string
-      memo?: Memo
-    }) => {
+    async (vars: { owner?: Address; siteName: string; memo?: Memo }) => {
       return await network?.web.remove(vars)
     },
     {

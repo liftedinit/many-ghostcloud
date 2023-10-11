@@ -36,7 +36,6 @@ export function Dashboard() {
   const [activeDeploymentUuid, setActiveDeploymentUuid] = useState('')
   const [isRedeploying, setIsRedeploying] = useState(false)
 
-  // TODO: Handle error
   const {
     deployments,
     nextBtnProps,
@@ -48,7 +47,7 @@ export function Dashboard() {
     isLoading,
     error,
   } = useDeploymentList({
-    address: account?.address,
+    address: isAnonymous ? undefined : account?.address,
   })
 
   const handleDeleteDeployment = (uuid: string) => {
