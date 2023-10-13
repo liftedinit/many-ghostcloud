@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2023-10-13
+
+### Features
+
+- `web.list` pagination and custom domain support ([#39](https://github.com/liftedinit/ghostcloud/issues/39))
+
 ## [0.1.4] - 2023-10-03
 
 ### Features
