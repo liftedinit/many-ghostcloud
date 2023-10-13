@@ -47,12 +47,14 @@ const MAX_FILE_SIZE_BYTES = 5242546 // This is the limit supported by the backen
 const SITE_NAME_MAX_LENGTH = 12
 const SITE_DESCRIPTION_MAX_LENGTH = 500
 const TRANSACTION_MEMO_MAX_LENGTH = 500
+const DOMAIN_MAX_LENGTH = 253
 
 interface FormState {
   siteName: string
   siteDescription?: string
   zipFile: File | undefined
   transactionMemo?: string
+  domain?: string
 }
 
 const initialFormState = {
@@ -60,6 +62,7 @@ const initialFormState = {
   siteDescription: '',
   zipFile: undefined,
   transactionMemo: '', // Must be a controlled element
+  domain: '', // Must be a controlled element
 }
 
 type CreateDeploymentProps = {
@@ -67,7 +70,6 @@ type CreateDeploymentProps = {
   isOpen: boolean
   deployments: Deployment[]
   activeDeploymentUuid: string
-  setDeployments: (deployments: Deployment[]) => void
   isRedeploying: boolean
   setIsRedeploying: (value: boolean) => void
 }
@@ -76,6 +78,7 @@ type Lengths = {
   siteName: number
   siteDescription: number
   transactionMemo: number
+  domain: number
 }
 
 export default function CreateDeployment({
@@ -83,7 +86,6 @@ export default function CreateDeployment({
   isOpen,
   deployments,
   activeDeploymentUuid,
-  setDeployments,
   isRedeploying,
   setIsRedeploying,
 }: CreateDeploymentProps) {
@@ -113,10 +115,11 @@ export default function CreateDeployment({
     siteName: 0,
     siteDescription: 0,
     transactionMemo: 0,
+    domain: 0,
   })
   const account = useAccountsStore(s => s.byId.get(s.activeId))
-  const createDeploymentMutation = useCreateDeployment()
-  const updateDeploymentMutation = useUpdateDeployment()
+  const createDeploymentMutation = useCreateDeployment(account?.address)
+  const updateDeploymentMutation = useUpdateDeployment(account?.address)
 
   const remainingChars = (currentLength: number, maxLength: number) =>
     `${currentLength}/${maxLength}`
@@ -145,6 +148,7 @@ export default function CreateDeployment({
         siteDescription: foundDeployment.siteDescription,
         transactionMemo: foundDeployment.transactionMemo,
         zipFile: undefined,
+        domain: foundDeployment.domain,
       }))
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -169,13 +173,12 @@ export default function CreateDeployment({
         returnedData,
         deployments,
         activeDeploymentUuid,
-        setDeployments,
         setIsSubmitting,
         setIsComplete,
         setIsRedeploying,
       })
     },
-    [deployments, activeDeploymentUuid, setDeployments, setIsRedeploying],
+    [deployments, activeDeploymentUuid, setIsRedeploying],
   )
 
   const handleError = useCallback(
@@ -215,6 +218,7 @@ export default function CreateDeployment({
           payload,
         } as DeploymentSource,
         memo: formState.transactionMemo ? [formState.transactionMemo] : [''],
+        domain: formState.domain,
       }
 
       await handleMutation(
@@ -336,7 +340,10 @@ export default function CreateDeployment({
                     maxLength={SITE_DESCRIPTION_MAX_LENGTH}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    {remainingChars(lengths.siteDescription, 500)}
+                    {remainingChars(
+                      lengths.siteDescription,
+                      SITE_DESCRIPTION_MAX_LENGTH,
+                    )}
                   </Text>
                 </FormControl>
 
@@ -360,7 +367,32 @@ export default function CreateDeployment({
                     maxLength={TRANSACTION_MEMO_MAX_LENGTH}
                   />
                   <Text fontSize="sm" color="gray.500">
-                    {remainingChars(lengths.transactionMemo, 500)}
+                    {remainingChars(
+                      lengths.transactionMemo,
+                      TRANSACTION_MEMO_MAX_LENGTH,
+                    )}
+                  </Text>
+                </FormControl>
+
+                <FormControl>
+                  <Flex align="center">
+                    <FormLabel htmlFor="domain">Custom domain</FormLabel>
+                    <Box ml="auto">
+                      <Info id="domain" />
+                    </Box>
+                  </Flex>
+                  <Input
+                    id="domain"
+                    name="domain"
+                    placeholder=""
+                    size="lg"
+                    value={formState.domain}
+                    onChange={handleInputChange}
+                    borderColor={theme.colors.gray[400]}
+                    maxLength={DOMAIN_MAX_LENGTH}
+                  />
+                  <Text fontSize="sm" color="gray.500">
+                    {remainingChars(lengths.domain, DOMAIN_MAX_LENGTH)}
                   </Text>
                 </FormControl>
 

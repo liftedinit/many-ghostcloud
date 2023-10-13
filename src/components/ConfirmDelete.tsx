@@ -16,13 +16,11 @@ export default function ConfirmDelete({
   isOpen,
   deployments,
   activeDeploymentUuid,
-  setDeployments,
 }: {
   onClose: () => void
   isOpen: boolean
   deployments: any
   activeDeploymentUuid: any
-  setDeployments: any
 }) {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
 
@@ -37,14 +35,10 @@ export default function ConfirmDelete({
       memo: currentDeployment.memo,
     }
     removeDeploymentMutation.mutate(removeData)
-    const newDeployments = deployments.filter(
-      (deployment: any) => deployment.uuid !== activeDeploymentUuid,
-    )
-    setDeployments(newDeployments)
     onClose()
   }
 
-  const removeDeploymentMutation = useRemoveDeployment()
+  const removeDeploymentMutation = useRemoveDeployment(account?.address)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

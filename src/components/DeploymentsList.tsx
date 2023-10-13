@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 import { DeleteIcon, EditIcon } from '@liftedinit/ui'
 import Pagination from './Pagination'
+import { WebDeployInfoWithUuid } from '../features/deployments'
 
 const formatUrlDisplay = (url: string) => {
   if (url.length <= 34) {
@@ -102,7 +103,7 @@ export default function DeploymentsList(props: any) {
   return (
     <>
       <Grid
-        templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr'}
+        templateColumns={isMobile ? '1fr' : '1fr 1fr 2fr 1fr 1fr'}
         gap={0}
         mt={4}
         mb={10}
@@ -137,15 +138,26 @@ export default function DeploymentsList(props: any) {
         <GridItem
           colSpan={1}
           borderBottom={`1px solid ${theme.colors.gray[200]}`}
+          py={2}
+          display={isMobile ? 'none' : 'flex'}
+          alignItems="center"
+        >
+          <Text fontWeight="bold">Domain</Text>
+        </GridItem>
+        <GridItem
+          colSpan={1}
+          borderBottom={`1px solid ${theme.colors.gray[200]}`}
           display={isMobile ? 'none' : 'flex'}
         ></GridItem>
-        {deployments.map((deployment: any) => {
-          const { uuid, siteName, siteDescription, deploymentUrl } = deployment
+        {deployments.map((deployment: WebDeployInfoWithUuid) => {
+          const { uuid, siteName, siteDescription, deploymentUrl, domain } =
+            deployment
           return (
             <Fragment key={uuid}>
               <Td label="Name" value={siteName} />
               <Td label="Description" value={siteDescription} />
               <Td label="URL" value={deploymentUrl} />
+              <Td label="Domain" value={domain} />
 
               <GridItem
                 colSpan={1}
