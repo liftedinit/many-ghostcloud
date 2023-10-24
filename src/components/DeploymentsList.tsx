@@ -171,7 +171,7 @@ export default function DeploymentsList(props: any) {
                 justifyContent={isMobile ? 'flex-start' : 'flex-end'}
               >
                 {isDeleting && uuid === activeDeploymentUuid ? (
-                  <Spinner size="sm" />
+                  <Spinner size="sm" my={2} mr={2} />
                 ) : (
                   <>
                     <IconButton
