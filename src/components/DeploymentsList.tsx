@@ -6,6 +6,7 @@ import {
   IconButton,
   Text,
   Link,
+  Spinner,
   Tooltip,
   useTheme,
   useMediaQuery,
@@ -96,6 +97,8 @@ export default function DeploymentsList(props: any) {
     nextBtnProps,
     prevBtnProps,
     numPages,
+    isDeleting,
+    activeDeploymentUuid,
   } = props
   const theme = useTheme()
   const [isMobile] = useMediaQuery('(max-width: 640px)')
@@ -167,23 +170,29 @@ export default function DeploymentsList(props: any) {
                 alignItems="center"
                 justifyContent={isMobile ? 'flex-start' : 'flex-end'}
               >
-                <IconButton
-                  onClick={() => onEdit(uuid)}
-                  aria-label="Redeploy"
-                  icon={<EditIcon />}
-                  size="sm"
-                  fontWeight="normal"
-                  mr={3}
-                />
-                <IconButton
-                  onClick={() => onDelete(uuid)}
-                  aria-label="Delete"
-                  icon={<DeleteIcon />}
-                  size="sm"
-                  fontWeight="normal"
-                >
-                  Delete
-                </IconButton>
+                {isDeleting && uuid === activeDeploymentUuid ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <>
+                    <IconButton
+                      onClick={() => onEdit(uuid)}
+                      aria-label="Redeploy"
+                      icon={<EditIcon />}
+                      size="sm"
+                      fontWeight="normal"
+                      mr={3}
+                    />
+                    <IconButton
+                      onClick={() => onDelete(uuid)}
+                      aria-label="Delete"
+                      icon={<DeleteIcon />}
+                      size="sm"
+                      fontWeight="normal"
+                    >
+                      Delete
+                    </IconButton>
+                  </>
+                )}
               </GridItem>
             </Fragment>
           )
