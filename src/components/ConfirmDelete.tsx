@@ -9,6 +9,7 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react'
 import { useRemoveDeployment } from 'features/deployments/queries'
+import { useEffect } from 'react'
 import { useAccountsStore } from '../features/accounts'
 
 export default function ConfirmDelete({
@@ -16,11 +17,13 @@ export default function ConfirmDelete({
   isOpen,
   deployments,
   activeDeploymentUuid,
+  setIsDeleting,
 }: {
   onClose: () => void
   isOpen: boolean
   deployments: any
   activeDeploymentUuid: any
+  setIsDeleting: (value: boolean) => void
 }) {
   const account = useAccountsStore(s => s.byId.get(s.activeId))
 
@@ -31,14 +34,19 @@ export default function ConfirmDelete({
     )
     const removeData = {
       owner: account?.address,
-      siteName: currentDeployment.siteName,
-      memo: currentDeployment.memo,
+      siteName: currentDeployment?.siteName,
+      memo: currentDeployment?.memo,
     }
     removeDeploymentMutation.mutate(removeData)
     onClose()
   }
 
   const removeDeploymentMutation = useRemoveDeployment(account?.address)
+  const { isLoading } = removeDeploymentMutation
+
+  useEffect(() => {
+    setIsDeleting(isLoading)
+  }, [isLoading, setIsDeleting])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>

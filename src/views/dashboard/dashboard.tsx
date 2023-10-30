@@ -35,6 +35,7 @@ export function Dashboard() {
   const [isMobile] = useMediaQuery('(max-width: 640px)')
   const [activeDeploymentUuid, setActiveDeploymentUuid] = useState('')
   const [isRedeploying, setIsRedeploying] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     deployments,
@@ -108,6 +109,7 @@ export function Dashboard() {
           </Grid>
 
           <DeploymentsList
+            activeDeploymentUuid={activeDeploymentUuid}
             deployments={deployments}
             onDelete={handleDeleteDeployment}
             onEdit={handleEditDeployment}
@@ -116,6 +118,7 @@ export function Dashboard() {
             numPages={numPages}
             total={total}
             currentPage={currentPage}
+            isDeleting={isDeleting}
           />
           {!isError && !isLoading && deployments.length === 0 ? (
             <Center>
@@ -142,6 +145,7 @@ export function Dashboard() {
           onClose={confirmDeleteOnClose}
           deployments={deployments}
           activeDeploymentUuid={activeDeploymentUuid}
+          setIsDeleting={setIsDeleting}
         />
       </Container>
     </>
