@@ -1,6 +1,6 @@
 # ghostcloud
-[![ci](https://img.shields.io/circleci/build/gh/liftedinit/ghostcloud)](https://app.circleci.com/pipelines/gh/liftedinit/ghostcloud)
-[![coverage](https://img.shields.io/codecov/c/gh/liftedinit/ghostcloud)](https://app.codecov.io/gh/liftedinit/ghostcloud)
+[![ci](https://img.shields.io/circleci/build/gh/liftedinit/many-ghostcloud)](https://app.circleci.com/pipelines/gh/liftedinit/many-ghostcloud)
+[![coverage](https://img.shields.io/codecov/c/gh/liftedinit/many-ghostcloud)](https://app.codecov.io/gh/liftedinit/many-ghostcloud)
 
 
 Decentralized Web Hosting
